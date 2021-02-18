@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+#third party library
+libs/*
+
+#build directory
+build/*
+_build/*
