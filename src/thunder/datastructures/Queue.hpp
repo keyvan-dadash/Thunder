@@ -3,6 +3,7 @@
 
 #include <utility>
 #include <memory>
+#include <iostream>
 
 
 #include <thunder/datastructures/BaseQueue.hpp>
@@ -34,24 +35,29 @@ namespace thunder {
               };
           };
 
-          typename BaseQueueStatus::Status push(Element&& element) override;
+          int push(Element&& element) override;
 
-          typename BaseQueueStatus::Status tryPush(Element&& element, int maxSize) override;
+          int tryPush(Element&& element, int maxSize) override;
           
           Element front() override;
 
-          typename BaseQueueStatus::Status pop() override;
+          int pop() override;
 
           bool isEmpty() override;
 
         private:
-          struct Node {    
-            Element element;
+          struct Node {
+            public:    
+              Element element = NULL;
 
-            template <typename T>
-            explicit Node(T&& t) : element(std::forward<T>(element)) {}
+              template <typename T>
+              explicit Node(T&& t) : element(std::forward<T>(t)) {}
+
+              Node operator=(Node&& other) {
+                element(other.element);
+              }
             
-            Node *next{};
+              Node *next = nullptr;
           };
 
           std::unique_ptr<Node> head_ = nullptr;

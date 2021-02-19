@@ -7,7 +7,7 @@
 
 #include <thunder/datastructures/Queue.hpp>
 
-TEST(QUEUE, CreateQueue) {
+TEST(QueueBasicOperations, CreateQueue) {
     EXPECT_NO_THROW({
         thunder::datastructures::Queue<int> queue;
     });
@@ -22,7 +22,7 @@ TEST(QUEUE, CreateQueue) {
     });
 }
 
-TEST(QUEUE, EmptyQueue) {
+TEST(QueueBasicOperations, EmptyQueue) {
     {
         thunder::datastructures::Queue<int> queue;
         EXPECT_EQ(queue.isEmpty(), true);
@@ -41,7 +41,7 @@ TEST(QUEUE, EmptyQueue) {
     }
 }
 
-TEST(QUEUE, PushElementToQueue) {
+TEST(QueueBasicOperations, PushElementToQueue) {
     {
         thunder::datastructures::Queue<int> queue;
         EXPECT_EQ(queue.push(5), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
@@ -61,7 +61,7 @@ TEST(QUEUE, PushElementToQueue) {
     }
 }
 
-TEST(QUEUE, TryPushElementToQueue) {
+TEST(QueueBasicOperations, TryPushElementToQueue) {
     {
         thunder::datastructures::Queue<int> queue;
         EXPECT_EQ(queue.tryPush(5, 10), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
@@ -81,7 +81,7 @@ TEST(QUEUE, TryPushElementToQueue) {
     }
 }
 
-TEST(QUEUE, GetFrontElement) {
+TEST(QueueBasicOperations, GetFrontElement) {
     {
         thunder::datastructures::Queue<int> queue;
         queue.push(5);
@@ -94,19 +94,19 @@ TEST(QUEUE, GetFrontElement) {
     }
     {
         thunder::datastructures::Queue<float> queue;
-        queue.push(5.1);
-        EXPECT_EQ(queue.front(), 5.1);
+        queue.push((float)5.1);
+        EXPECT_EQ(queue.front(), (float)5.1);
     }
     {
         thunder::datastructures::Queue<std::string> queue;
         queue.push("foo");
         EXPECT_EQ(queue.front(), "foo");
         queue.push(std::string("bar"));
-        EXPECT_EQ(queue.front(), "bar");
+        EXPECT_EQ(queue.front(), "foo");
     }
 }
 
-TEST(QUEUE, PopElementFromQueue) {
+TEST(QueueBasicOperations, PopElementFromQueue) {
     {
         thunder::datastructures::Queue<int> queue;
         queue.push(5);

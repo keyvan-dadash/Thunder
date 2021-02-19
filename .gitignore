@@ -37,3 +37,6 @@ libs/*
 #build directory
 build/*
 _build/*
+
+#vscode settings
+.vscode/
