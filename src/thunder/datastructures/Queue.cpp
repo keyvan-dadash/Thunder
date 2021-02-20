@@ -11,15 +11,35 @@ namespace thunder {
 
   namespace datastructures {
 
-    // Queue(Queue&& other) noexcept
-    // {
+    template<typename Element>
+    Queue<Element>::Queue(Queue<Element>&& rhs) noexcept
+      : size_( std::move(rhs.size_ ))
+      , head_( std::move(rhs.head_ ))
+    {
+      
+    }
 
-    // }
+    template<typename Element>
+    Queue<Element>& 
+    Queue<Element>::operator=(Queue<Element>&& rhs) noexcept
+    {
+      this->size_( std::move(rhs.size_) );
+      this->head_.reset( std::move(rhs.head_) );
+
+      return *this;
+    }
 
     template<typename Element>
     Queue<Element>::~Queue()
     {
-
+      if (this->size_ > 0 && this->head_.get() != nullptr) {
+        while (this->size_ > 0)
+        {
+          if (this->pop() == QueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY) {
+            return;
+          }
+        }
+      }
     }
     
     template<typename Element>
@@ -53,19 +73,27 @@ namespace thunder {
     }
 
     template<typename Element>
-    Element Queue<Element>::front()
+    std::shared_ptr<Element> Queue<Element>::front()
     {
+      if (this->size_ == 0 || this->head_.get() == nullptr) {
+        return std::make_shared<Element>(); 
+      }
+
       Node *next{this->head_.get()};
       while (next->next != nullptr) {
         next = next->next;
       }
 
-      return next->element;
+      return std::make_shared<Element>(next->element);
     }
 
     template<typename Element>
     int Queue<Element>::pop()
     {
+      if (this->size_ == 0 || this->head_.get() == nullptr) {
+        return QueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY;
+      }
+
       Node *next{this->head_.get()};
       while (next->next != nullptr && next->next->next != nullptr) {
         next = next->next;

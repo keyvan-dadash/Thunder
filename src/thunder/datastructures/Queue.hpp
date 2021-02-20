@@ -21,8 +21,8 @@ namespace thunder {
 
           ~Queue();
 
-        //   Queue(Queue&& other) noexcept;
-        //   Queue operator=(Queue&& other) noexcept;
+          Queue(Queue<Element>&& other) noexcept;
+          Queue<Element>& operator=(Queue<Element>&& rhs) noexcept;
 
           using BaseQueueStatus = typename BaseQueue<Element>::BaseQueueStatus;
 
@@ -31,7 +31,9 @@ namespace thunder {
               enum Status
               {
                 ELEMENT_PUSHED_SUCCESSFULLY = BaseQueueStatus::Status::ELEMENT_PUSHED_SUCCESSFULLY,
-                ELEMENT_POPED_SUCCESSFULLY
+                ELEMENT_POPED_SUCCESSFULLY,
+                CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE,
+                OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY
               };
           };
 
@@ -39,7 +41,7 @@ namespace thunder {
 
           int tryPush(Element&& element, int maxSize) override;
           
-          Element front() override;
+          std::shared_ptr<Element> front() override;
 
           int pop() override;
 

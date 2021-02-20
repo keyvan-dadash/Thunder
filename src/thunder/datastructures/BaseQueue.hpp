@@ -30,7 +30,7 @@ namespace thunder {
 
           virtual int tryPush(Element&& element, int maxSize) = 0;
 
-          virtual Element front() = 0;
+          virtual std::shared_ptr<Element> front() = 0;
 
           virtual int pop() = 0;
 
