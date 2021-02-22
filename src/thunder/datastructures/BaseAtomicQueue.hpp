@@ -1,4 +1,5 @@
 
+#pragma once
 
 #include <thunder/datastructures/BaseQueue.hpp>
 
@@ -17,7 +18,9 @@ namespace thunder {
 
           ~BaseAtomicQueue() = default;
 
-          class AtomicBaseQueueStatus 
+          using BaseQueueStatus = typename BaseQueue<Element>::BaseQueueStatus;
+
+          class BaseAtomicQueueStatus 
           {
             public:
               enum Status
