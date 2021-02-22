@@ -43,9 +43,10 @@ namespace thunder {
     }
     
     template<typename Element>
-    int Queue<Element>::push(Element&& element)
+    template <typename T>
+    int Queue<Element>::push(T&& t)
     {
-      std::unique_ptr<Node> node(new Node(std::forward<Element>(element)));
+      std::unique_ptr<Node> node(new Node(std::forward<T>(t)));
       node->next = this->head_.release();
 
       this->head_.reset(node.get());
@@ -56,13 +57,14 @@ namespace thunder {
     }
 
     template<typename Element>
-    int Queue<Element>::tryPush(Element&& element, int maxSize)
+    template <typename T>
+    int Queue<Element>::tryPush(T&& t, int maxSize)
     {
       if (this->size_ >= maxSize) {
         return static_cast<int>(BaseQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE);
       }
 
-      std::unique_ptr<Node> node(new Node(std::forward<Element>(element)));
+      std::unique_ptr<Node> node(new Node(std::forward<T>(t)));
       node->next = this->head_.release();
 
       this->head_.reset(node.get());

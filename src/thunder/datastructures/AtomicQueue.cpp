@@ -2,6 +2,7 @@
 #pragma once
 
 #include <atomic>
+#include <iostream>
 
 
 #include <thunder/datastructures/AtomicQueue.hpp>
@@ -11,10 +12,11 @@ namespace thunder {
 
   namespace datastructures {
 
-    template< typename Element>
-    int AtomicQueue<Element>::push(Element&& element)
+    template<typename Element>
+    template<typename T> 
+    int AtomicQueue<Element>::push(T&& t)
     {
-        std::unique_ptr<Node> node(new Node(std::forward<Element>(element)));
+        std::unique_ptr<Node> node(new Node(std::forward<T>(t)));
         auto head = this->head_.load(std::memory_order_relaxed);
         node->next = head;
 
@@ -33,13 +35,14 @@ namespace thunder {
     }
 
     template< typename Element>
-    int AtomicQueue<Element>::tryPush(Element&& element, int maxSize)
+    template<typename T>
+    int AtomicQueue<Element>::tryPush(T&& t, int maxSize)
     {
         if (this->size_.load(std::memory_order_relaxed) >= maxSize) {
             return static_cast<int>(BaseAtomicQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE);
         }
 
-        std::unique_ptr<Node> node(new Node(std::forward<Element>(element)));
+        std::unique_ptr<Node> node(new Node(std::forward<T>(t)));
         auto head = this->head_.load(std::memory_order_relaxed);
         node->next = head;
 
@@ -69,7 +72,7 @@ namespace thunder {
       while (next->next != nullptr) {
         next = next->next;
       }
-
+      
       return std::make_shared<Element>(next->element);
     }
 
@@ -111,6 +114,12 @@ namespace thunder {
     bool AtomicQueue<Element>::isEmpty()
     {
       return this->size_.load(std::memory_order_relaxed) > 0 ? false : true;
+    }
+
+    template<typename Element>
+    int AtomicQueue<Element>::getSizeOfQueue()
+    {
+      return this->size_.load(std::memory_order_relaxed);
     }
 
   }

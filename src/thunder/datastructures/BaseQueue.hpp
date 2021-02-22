@@ -25,10 +25,11 @@ namespace thunder {
               };
           };
 
+          template <typename T>
+          int push(T&& t);
 
-          virtual int push(Element&& element) = 0;
-
-          virtual int tryPush(Element&& element, int maxSize) = 0;
+          template <typename T>
+          int tryPush(T&& t, int maxSize);
 
           virtual std::shared_ptr<Element> front() = 0;
 

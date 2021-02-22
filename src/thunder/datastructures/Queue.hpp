@@ -37,9 +37,11 @@ namespace thunder {
               };
           };
 
-          int push(Element&& element) override;
+          template <typename T>
+          int push(T&& t);
 
-          int tryPush(Element&& element, int maxSize) override;
+          template <typename T>
+          int tryPush(T&& t, int maxSize);
           
           std::shared_ptr<Element> front() override;
 
