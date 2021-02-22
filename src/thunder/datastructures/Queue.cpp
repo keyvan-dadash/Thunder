@@ -121,6 +121,14 @@ namespace thunder {
     {
       return this->size_ > 0 ? false : true;
     }
+
+    template<typename Element>
+    int Queue<Element>::getSizeOfQueue()
+    {
+      return this->size_;
+    }
+
+
   }
 
 

@@ -37,6 +37,8 @@ namespace thunder {
 
           virtual bool isEmpty() = 0;
 
+          virtual int getSizeOfQueue() = 0;
+
      };
 
   }

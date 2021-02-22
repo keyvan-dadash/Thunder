@@ -49,6 +49,8 @@ namespace thunder {
 
           bool isEmpty() override;
 
+          int getSizeOfQueue() override;
+
         private:
           struct Node {
             public:    

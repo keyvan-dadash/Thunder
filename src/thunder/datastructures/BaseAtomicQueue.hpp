@@ -20,8 +20,6 @@ namespace thunder {
 
           using BaseQueueStatus = typename BaseQueue<Element>::BaseQueueStatus;
 
-          virtual int getSizeOfQueue() = 0;
-
           class BaseAtomicQueueStatus 
           {
             public:
