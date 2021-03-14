@@ -43,13 +43,19 @@ namespace thunder {
             std::aligned_storage_t<sizeof(key_value_item), alignof(key_value_item)>,
             NUMBER_OF_SLOT_IN_BUCKET> slots;
       public:
-        bucket();
+        bucket()
+        {
+
+        }
 
         bucket(bucket& other) = delete;
 
         bucket operator=(bucket& other) = delete;
 
-        ~bucket();
+        ~bucket()
+        {
+            
+        }
 
         bool setKeyValueOnIndex(Key& key, Value& value, size_type ind)
         {
