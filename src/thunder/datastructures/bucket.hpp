@@ -77,6 +77,11 @@ namespace thunder {
             return reinterpret_cast<const key_const_value_item&>(this->slots[ind]);
         }
 
+        key_value_item& returnChangeableKeyValue(size_type ind)
+        {
+            return this->slots[ind];
+        }
+
         key& returnKey(size_type ind)
         {
             return this->slots[ind].first;
@@ -100,6 +105,11 @@ namespace thunder {
         bool isSlotEmpty(size_type ind)
         {
             return !this->slotsStatus[ind];
+        }
+
+        void setSlotStatus(size_type ind, bool status)
+        {
+            this->slotsStatus[ind] = status;
         }
     };
 

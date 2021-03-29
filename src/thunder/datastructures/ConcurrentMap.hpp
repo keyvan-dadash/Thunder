@@ -93,7 +93,7 @@ namespace thunder {
 
             bucket_pointer buckets_;
 
-            std::atomic<bucket_internal_size_type> hashpower;
+            std::atomic<bucket_internal_size_type> hashpower_;
 
             bucket_internal_size_type sizeMap;
 
@@ -101,23 +101,118 @@ namespace thunder {
           public:
 
             bucket_manager(bucket_internal_size_type size, Allocator& alloc) : 
-                                                                    hashpower(size),
                                                                     bucket_allocator_(alloc), 
                                                                     bucket_internal_allocator_(alloc),
                                                                     buckets_(bucket_allocator_.allocate(this->size()))
                                                                     
             {
-                for (bucket_internal_size_type i = 0; i < this->size(); i++) {
-                    bucket_internal_traits::construct(bucket_internal_allocator_, &buckets_[i]);
-                }
+              hashpower(size);
+              for (bucket_internal_size_type i = 0; i < this->size(); i++) {
+                  bucket_internal_traits::construct(bucket_internal_allocator_, &buckets_[i]);
+              }
 
+            }
+
+            ~bucket_manager() 
+            {
+              this->destroy();
             }
 
 
 
+            template<typename K, typename V>
+            bool setKeyValue(bucket_internal_size_type index, bucket_internal_size_type slot, K key, V value) 
+            {
+
+              bucket_t& b = buckets_[index];
+              if (!b.isSlotEmpty(index)) {
+                return false;
+              }
+
+              bucket_internal_traits::construct(bucket_internal_allocator_, 
+                                                std::addressof(b.returnChangeableKeyValue(slot)),
+                                                std::piecewise_construct,
+                                                std::forward_as_tuple(std::forward<K>(key)),
+                                                std::forward_as_tuple(std::forward<V>(value)));
+
+              b->setSlotStatus(false);
+
+              return true;
+            }
+
+            bool earseKeyValue(bucket_internal_size_type index, bucket_internal_size_type slot) 
+            {
+
+              bucket_t& b = buckets_[index];
+              if (b.isSlotEmpty(index)) {
+                return false;
+              }
+
+              bucket_internal_traits::destroy(bucket_internal_allocator_, 
+                                                std::addressof(b.returnChangeableKeyValue(slot)));
+
+              b->setSlotStatus(true);
+
+              return true;
+            }
+
+            bool clear() 
+            {
+              for (bucket_internal_size_type i = 0; i < this->size(); i++) {
+
+                bucket_t& b = buckets_[i];
+                for (int j = 0; j < NUMBER_OF_SLOT_IN_BUCKET; j++) {
+
+                  if (!b.isSlotEmpty(j)) {
+                    bool isCleaned = this->earseKeyValue(i, j);
+
+                    if (!isCleaned) {
+                      return false
+                    }
+                  }
+                }
+              }
+
+              return true
+            }
+
+
+            void destroy()
+            {
+              if (this->buckets_ == nullptr) {
+                return;
+              }
+
+              this->clear();
+              for (bucket_internal_size_type i = 0; i < this->size(); i++) {
+                bucket_internal_traits::destroy(bucket_internal_allocator_, 
+                                                &buckets_[i]);
+              }
+
+              this->bucket_allocator_.deallocate(buckets_, this->size());
+              this->bucket_ = nullptr;
+            }
+
+
+
+            bucket_internal_size_type hashpower()
+            {
+              return hashpower_.load(std::memory_order_acquire);
+            }
+
+            void hashpower(bucket_internal_size_type newHashPower)
+            {
+              hashpower_.store(std::memory_order_release);
+            }
+
             bucket_internal_size_type size()
             {
-              return bucket_internal_size_type(1) << hashpower.load(std::memory_order_relaxed);
+              return bucket_internal_size_type(1) << hashpower();
+            }
+
+            bucket_t& operator[](bucket_internal_size_type index)
+            {
+              return buckets_[index];
             }
 
         };
