@@ -108,8 +108,6 @@ namespace thunder {
               hashpower(size);
               this->buckets_ = this->bucket_allocator_.allocate(this->size());
               for (bucket_internal_size_type i = 0; i < this->size(); i++) {
-
-                std::cout << i << std::endl;
                 bucket_internal_traits::construct(bucket_internal_allocator_, &buckets_[i]);
               }
 
@@ -187,7 +185,7 @@ namespace thunder {
 
               this->clear();
               for (bucket_internal_size_type i = 0; i < this->size(); i++) {
-                bucket_internal_traits::destroy(bucket_internal_allocator_, 
+                bucket_traits::destroy(bucket_allocator_, 
                                                 &buckets_[i]);
               }
 

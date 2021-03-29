@@ -45,7 +45,10 @@ namespace thunder {
       public:
         bucket()
         {
-
+            for (int i = 0; i < NUMBER_OF_SLOT_IN_BUCKET; i++) {
+                this->setSlotStatus(i, true);
+            }
+            
         }
 
         bucket(bucket& other) = delete;
@@ -62,7 +65,7 @@ namespace thunder {
             if (!this->isSlotEmpty(ind)) {
                 return false;
             }
-            this->slots[ind] = std::make_pair(key, value);
+            *reinterpret_cast<key_value_item *>(&this->slots[ind]) = std::make_pair(key, value);
             this->slotsStatus[ind] = true;
             return true;
         }
@@ -79,12 +82,12 @@ namespace thunder {
 
         key_value_item& returnChangeableKeyValue(size_type ind)
         {
-            return reinterpret_cast<key_value_item&>(this->slots[ind]);
+            return *reinterpret_cast<key_value_item *>(&this->slots[ind]);
         }
 
         key& returnKey(size_type ind)
         {
-            return reinterpret_cast<key&>(this->slots[ind].first);
+            return reinterpret_cast<key_value_item *>(&this->slots[ind])->first;
         }
 
         const key& returnKey(size_type ind) const
@@ -107,9 +110,9 @@ namespace thunder {
             return !this->slotsStatus[ind];
         }
 
-        void setSlotStatus(size_type ind, bool status)
+        void setSlotStatus(size_type ind, bool isEmpty)
         {
-            this->slotsStatus[ind] = status;
+            this->slotsStatus[ind] = !isEmpty;
         }
     };
 
