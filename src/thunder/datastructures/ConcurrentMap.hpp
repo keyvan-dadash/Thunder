@@ -12,7 +12,7 @@ namespace thunder {
   namespace datastructures {
 
     const std::size_t DEFAULT_NUMBER_OF_SLOT_IN_BUCKET = 4;
-    const std::size_t DEFAULT_MAP_SIZE = (1U << 16) * DEFAULT_NUMBER_OF_SLOT_IN_BUCKET;
+    const std::size_t DEFAULT_MAP_SIZE = (1U << 4) * DEFAULT_NUMBER_OF_SLOT_IN_BUCKET;
 
     template<
             class Key,
@@ -39,9 +39,9 @@ namespace thunder {
         ConcurrentMap(Hash hasher = Hash(),
                       Allocator allocator = Allocator(),
                       KeyEqual key_equal = KeyEqual(),
-                      bucket_manager_size_type sizeMap = DEFAULT_MAP_SIZE) : buckets_(sizeMap, allocator)
+                      bucket_manager_size_type sizeMap = DEFAULT_MAP_SIZE)
         {
-
+          this->buckets_.reset(new bucket_manager(sizeMap, allocator));
         }
 
 
@@ -102,13 +102,15 @@ namespace thunder {
 
             bucket_manager(bucket_internal_size_type size, Allocator& alloc) : 
                                                                     bucket_allocator_(alloc), 
-                                                                    bucket_internal_allocator_(alloc),
-                                                                    buckets_(bucket_allocator_.allocate(this->size()))
+                                                                    bucket_internal_allocator_(alloc)
                                                                     
             {
               hashpower(size);
+              this->buckets_ = this->bucket_allocator_.allocate(this->size());
               for (bucket_internal_size_type i = 0; i < this->size(); i++) {
-                  bucket_internal_traits::construct(bucket_internal_allocator_, &buckets_[i]);
+
+                std::cout << i << std::endl;
+                bucket_internal_traits::construct(bucket_internal_allocator_, &buckets_[i]);
               }
 
             }
@@ -151,7 +153,7 @@ namespace thunder {
               bucket_internal_traits::destroy(bucket_internal_allocator_, 
                                                 std::addressof(b.returnChangeableKeyValue(slot)));
 
-              b->setSlotStatus(true);
+              b.setSlotStatus(slot, true);
 
               return true;
             }
@@ -167,13 +169,13 @@ namespace thunder {
                     bool isCleaned = this->earseKeyValue(i, j);
 
                     if (!isCleaned) {
-                      return false
+                      return false;
                     }
                   }
                 }
               }
 
-              return true
+              return true;
             }
 
 
@@ -190,7 +192,7 @@ namespace thunder {
               }
 
               this->bucket_allocator_.deallocate(buckets_, this->size());
-              this->bucket_ = nullptr;
+              this->buckets_ = nullptr;
             }
 
 
@@ -202,7 +204,7 @@ namespace thunder {
 
             void hashpower(bucket_internal_size_type newHashPower)
             {
-              hashpower_.store(std::memory_order_release);
+              hashpower_.store(newHashPower, std::memory_order_release);
             }
 
             bucket_internal_size_type size()
@@ -218,7 +220,7 @@ namespace thunder {
         };
 
 
-        bucket_manager buckets_;
+        std::unique_ptr<bucket_manager> buckets_ = nullptr;
 
 
     };

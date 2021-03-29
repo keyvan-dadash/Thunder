@@ -69,7 +69,7 @@ namespace thunder {
 
         key_const_value_item& returnKeyValue(size_type ind)
         {
-            return this->slots[ind];
+            return reinterpret_cast<key_const_value_item&>(this->slots[ind]);
         }
 
         const key_const_value_item& returnKeyValue(size_type ind) const
@@ -79,12 +79,12 @@ namespace thunder {
 
         key_value_item& returnChangeableKeyValue(size_type ind)
         {
-            return this->slots[ind];
+            return reinterpret_cast<key_value_item&>(this->slots[ind]);
         }
 
         key& returnKey(size_type ind)
         {
-            return this->slots[ind].first;
+            return reinterpret_cast<key&>(this->slots[ind].first);
         }
 
         const key& returnKey(size_type ind) const
@@ -94,12 +94,12 @@ namespace thunder {
 
         value& returnValue(size_type ind)
         {
-            return this->slots[ind].second;
+            return reinterpret_cast<value&>(this->slots[ind].second);
         }
 
         const value& returnValue(size_type ind) const
         {
-            return reinterpret_cast<const key&>(this->slots[ind].second);
+            return reinterpret_cast<const value&>(this->slots[ind].second);
         }
 
         bool isSlotEmpty(size_type ind)
