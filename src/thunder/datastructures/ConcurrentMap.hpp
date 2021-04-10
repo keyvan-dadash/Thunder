@@ -2,9 +2,11 @@
 
 #include <type_traits>
 #include <atomic>
-
+#include <list>
+#include <vector>
 
 #include <thunder/datastructures/bucket.hpp>
+#include <thunder/synchronization/SpinLock.hpp>
 
 
 
@@ -13,6 +15,7 @@ namespace thunder {
 
     const std::size_t DEFAULT_NUMBER_OF_SLOT_IN_BUCKET = 4;
     const std::size_t DEFAULT_MAP_SIZE = (1U << 4) * DEFAULT_NUMBER_OF_SLOT_IN_BUCKET;
+    const std::size_t MAXIMUM_NUMBER_OF_LOCKS = (1U << 16);
 
     template<
             class Key,
@@ -39,9 +42,11 @@ namespace thunder {
         ConcurrentMap(Hash hasher = Hash(),
                       Allocator allocator = Allocator(),
                       KeyEqual key_equal = KeyEqual(),
-                      bucket_manager_size_type sizeMap = DEFAULT_MAP_SIZE)
+                      bucket_manager_size_type sizeMap = DEFAULT_MAP_SIZE) : all_locks_(allocator)
         {
           this->buckets_.reset(new bucket_manager(sizeMap, allocator));
+
+          this->all_locks_.emplace_back(std::min(this->buckets_.get()->size(), MAXIMUM_NUMBER_OF_LOCKS));
         }
 
 
@@ -70,6 +75,8 @@ namespace thunder {
             friend class ConcurrentMap;
             //bucket type for easy access
             using bucket_t = bucket<Key, Value, Allocator, DEFAULT_NUMBER_OF_SLOT_IN_BUCKET, KeyEqual>;
+          
+          public:
             using bucket_internal_traits = typename bucket_t::traits_;
             using bucket_internal_size_type = typename bucket_t::size_type;
             using bucket_internal_allocator = typename bucket_t::allocator_type;
@@ -82,12 +89,8 @@ namespace thunder {
             //i will prepare resource here for those who want know more about this(or maybe myself after while)
             //resource:
             //  https://stackoverflow.com/questions/14148756/what-does-template-rebind-do
+          private:
             using bucket_traits = typename std::allocator_traits<Allocator>::template rebind_traits<bucket_t>;
-            using bucket_allocator_type = typename bucket_traits::allocator_type;
-            using bucket_const_pointer = typename bucket_traits::const_pointer;
-            using bucket_size_type = typename bucket_traits::size_type;
-            using bucket_pointer = typename bucket_traits::pointer;
-
 
             bucket_allocator_type bucket_allocator_;
 
@@ -96,6 +99,13 @@ namespace thunder {
             std::atomic<bucket_internal_size_type> hashpower_;
 
             bucket_internal_size_type sizeMap;
+
+          public:
+            using bucket_allocator_type = typename bucket_traits::allocator_type;
+            using bucket_const_pointer = typename bucket_traits::const_pointer;
+            using bucket_size_type = typename bucket_traits::size_type;
+            using bucket_pointer = typename bucket_traits::pointer;
+
 
 
           public:
@@ -217,8 +227,186 @@ namespace thunder {
 
         };
 
+        class BucketSpinLock {
+
+          public:
+            BucketSpinLock() : isMigrated_(true), numberOfElements_(0)
+            {
+              this->spinlock_.get()->clear();
+            }
+
+            BucketSpinLock(const BucketSpinLock& other)
+            {
+              this->isMigrated_(other.isMigrated_);
+              this->numberOfElements_(other.numberOfElements_);
+              this->spinlock_.get()->clear();
+            }
+
+            ~BucketSpinLock()
+            {
+              this->spinlock_.get()->clear();
+            }
+
+            void lock() noexcept
+            {
+              this->spinlock_.get()->lock();
+            }
+
+            void unlock() noexcept
+            {
+              this->spinlock_.get()->unlock();
+            }
+
+            bool trylock()
+            {
+              return this->spinlock_.get()->try_lock();
+            }
+
+            void clear()
+            {
+              this->spinlock_.get()->clear();
+            }
+
+            bool isMigrated()
+            {
+              return this->isMigrated_;
+            }
+
+            void setMigration(bool migrate)
+            {
+              this->isMigrated_ = migrate;
+            }
+
+          private:
+
+            std::unique_ptr<thunder::synchronization::SpinLock> spinlock_;
+            int64_t numberOfElements_;
+            bool isMigrated_;
+
+            char padding[thunder::synchronization::hardware_constructive_interference_size - \
+            (sizeof(spinlock_) + sizeof(int64_t) + sizeof(bool))];
+        };
+
+        static_assert(
+          sizeof(BucketSpinLock) == thunder::synchronization::hardware_destructive_interference_size,
+         "BucketSpinLock not in size cacheline");
+
+        template <typename T>
+        using rebind_T_Alloc = typename std::allocator_traits<Allocator>::template rebind_alloc<T>;
 
         std::unique_ptr<bucket_manager> buckets_ = nullptr;
+        std::unique_ptr<bucket_manager> old_buckets_ = nullptr;
+
+
+        using locks_t = typename std::vector<BucketSpinLock, rebind_T_Alloc<BucketSpinLock>>;
+        using all_locks_t = typename std::list<locks_t,  rebind_T_Alloc<locks_t>>;
+
+        all_locks_t all_locks_;
+
+
+        struct UnlockOnDestruction {
+          void operator()(BucketSpinLock* lock) const
+          {
+            lock->unlock();
+          }
+        };
+
+        using SafeLock = std::unique_ptr<BucketSpinLock, UnlockOnDestruction>;
+
+        using lock_all = std::integral_constant<bool, true>;
+        using normal_lock = std::integral_constant<bool, false>;
+
+        template<typename LOCK_MODE>
+        class TwoLockOnBucket {
+        
+
+          public:
+            template<typename = std::enable_if_t<std::is_same<LOCK_MODE, lock_all>::value, LOCK_MODE>>
+            TwoLockOnBucket(bucket_manager_size_type lock1, bucket_manager_size_type lock2) : first_lock_index_(lock1),
+                                                                                              second_lock_index_(lock2)
+            {}
+
+            template<typename = std::enable_if_t<std::is_same<LOCK_MODE, normal_lock>::value, LOCK_MODE>>
+            TwoLockOnBucket(lock_all& locks, bucket_manager_size_type lock1, bucket_manager_size_type lock2) : 
+                          first_lock_index_(lock1),
+                          second_lock_index_(lock2),
+                          firstLock_(get_locks(lock1)),
+                          secondLock_(get_locks(lock1) != get_locks(lock2) ? get_locks(lock2) : nullptr)
+                                                                                                                  
+            {
+            }
+
+            unlock()
+            {
+              this->firstLock_.reset();
+              this->secondLock_.reset();
+            }
+
+          size_t first_lock_index_, second_lock_index_;
+
+          private:
+            SafeLock firstLock_, secondLock_;
+
+        };
+
+        struct UnlockTwoLockOnBucket {
+          void operator()(TwoLockOnBucket* twoLock) const
+          {
+            twoLock->unlock();
+          }
+        }
+
+        using SafeTwoLockOnBucket = std::unique_ptr<TwoLockOnBucket,UnlockTwoLockOnBucket>;
+
+
+        template<typename LOCK_MODE, typename = std::enable_if_t<std::is_same<LOCK_MODE, lock_all>::value, LOCK_MODE>>
+        SafeLock lock_one_bucket(bucket_manager_size_type hp, bucket_manager_size_type lock1, lock_all)
+        {
+          return SafeLock();
+        }
+
+        template<typename LOCK_MODE, typename = std::enable_if_t<std::is_same<LOCK_MODE, normal_lock>::value, LOCK_MODE>>
+        SafeLock lock_one_bucket(bucket_manager::bucket_internal_size_type hp, bucket_manager_size_type lock1, normal_lock)
+        {
+          BucketSpinLock& spinlock = get_locks(lock1);
+          spinlock->lock();
+          if (this->buckets_.get()->hashpower() != hp) {
+            spinlock.unlock();
+            return SafeLock();
+          }
+          return SafeLock(spinlock);
+
+        }
+
+        template<typename LOCK_MODE, typename = std::enable_if_t<std::is_same<LOCK_MODE, lock_all>::value, LOCK_MODE>>
+        SafeLock lock_two_bucket(bucket_manager::bucket_internal_size_type hp, bucket_manager_size_type lock1, bucket_manager_size_type lock2, lock_all)
+        {
+          return SafeTwoLockOnBucket(current_locks, lock1, lock2, lock_all());
+        }
+
+        template<typename LOCK_MODE, typename = std::enable_if_t<std::is_same<LOCK_MODE, normal_lock>::value, LOCK_MODE>>
+        SafeLock lock_two_bucket(bucket_manager::bucket_internal_size_type hp, bucket_manager_size_type lock1, bucket_manager_size_type lock2, normal_lock)
+        {
+          lock_all current_locks = get_current_locks();
+          BucketSpinLock& spinlock1 = get_locks(lock1);
+          BucketSpinLock& spinlock2 = get_locks(lock2);
+          if (lock1 > lock2) {
+            std::swap(lock1, lock2);
+          }
+          spinlock1->lock();
+          if (this->buckets_.get()->hashpower() != hp) {
+            spinlock1.unlock();
+            return SafeTwoLockOnBucket(current_locks, lock1, lock2, lock_all()); //TODO: we should return error
+          }
+          if (lock1 != lock2) {
+            spinlock2->lock();
+          }
+          return SafeTwoLockOnBucket(current_locks, lock1, lock2, normal_lock());
+
+        }
+
+
+
 
 
     };

@@ -4,23 +4,22 @@
 #include <new>
 
 
-#ifdef __cpp_lib_hardware_interference_size
-    using std::hardware_constructive_interference_size;
-    using std::hardware_destructive_interference_size;
-#else
-    // 64 bytes on x86-64 │ L1_CACHE_BYTES │ L1_CACHE_SHIFT │ __cacheline_aligned │ ...
-    constexpr std::size_t hardware_constructive_interference_size
-        = 2 * sizeof(std::max_align_t);
-    constexpr std::size_t hardware_destructive_interference_size
-        = 2 * sizeof(std::max_align_t);
-#endif
-
-
 
 namespace thunder {
 
 
   namespace synchronization {
+
+    #ifdef __cpp_lib_hardware_interference_size
+        using std::hardware_constructive_interference_size;
+        using std::hardware_destructive_interference_size;
+    #else
+        // 64 bytes on x86-64 │ L1_CACHE_BYTES │ L1_CACHE_SHIFT │ __cacheline_aligned │ ...
+        constexpr std::size_t hardware_constructive_interference_size
+            = 2 * sizeof(std::max_align_t);
+        constexpr std::size_t hardware_destructive_interference_size
+            = 2 * sizeof(std::max_align_t);
+    #endif
     
     class SpinLock {
 
@@ -51,6 +50,11 @@ namespace thunder {
         bool try_lock() noexcept
         {
             return !lock_.test_and_set(std::memory_order_acq_rel);
+        }
+
+        void clear() noexcept
+        {
+          lock_.clear();
         }
 
       private:
