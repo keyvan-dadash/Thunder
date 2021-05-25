@@ -402,8 +402,9 @@ namespace thunder {
             spinlock2->lock();
           }
           return SafeTwoLockOnBucket(current_locks, lock1, lock2, normal_lock());
-
         }
+
+        
 
 
 
