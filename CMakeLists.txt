@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.8.11)
-project (thunder C CXX)
+project (thunder CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 include_directories(src)
 
