@@ -13,16 +13,16 @@
 
 
 
-TEST(BatonBasicCreation, Create)
+TEST(ReaderBatonBasicCreation, Create)
 {
     EXPECT_NO_THROW({
-        thunder::synchronization::Baton baton;
+        thunder::synchronization::ReaderPriorityBaton baton;
     });
 }
 
-TEST(BatonBasicOpreation, CheckThreadSafty)
+TEST(ReaderBatonBasicOpreation, CheckThreadSafty)
 {
-    thunder::synchronization::Baton baton;
+    thunder::synchronization::ReaderPriorityBaton baton;
 
     std::vector<std::thread> threads;
 
@@ -56,7 +56,7 @@ TEST(BatonBasicOpreation, CheckThreadSafty)
     
 }
 
-std::string gen_random(const int len) {
+std::string gen_random_readbaton(const int len) {
     
     std::string tmp_s;
     static const char alphanum[] =
@@ -76,10 +76,10 @@ std::string gen_random(const int len) {
     
 }
 
-TEST(BatonBasicOpreation, CheckThreadSaftyReaderWriter)
+TEST(ReaderBatonBasicOpreation, CheckThreadSaftyReaderWriter)
 {
-    thunder::synchronization::Baton baton;
-    thunder::synchronization::Baton resBaton;
+    thunder::synchronization::ReaderPriorityBaton baton;
+    thunder::synchronization::ReaderPriorityBaton resBaton;
 
     std::vector<std::thread> threads;
     std::vector<std::thread::id> writerThreadsID;
@@ -102,7 +102,7 @@ TEST(BatonBasicOpreation, CheckThreadSaftyReaderWriter)
             for (size_t j = 0; j < count_per_thread; j++)
             {
                 baton.write_access_start();
-                queue.push_back(std::tuple<int, std::thread::id, std::string>(j, std::this_thread::get_id(), gen_random(j % 30)));
+                queue.push_back(std::tuple<int, std::thread::id, std::string>(j, std::this_thread::get_id(), gen_random_readbaton(j % 30)));
                 std::this_thread::sleep_for(std::chrono::microseconds(40));
                 total++;
                 baton.write_access_end();
@@ -190,10 +190,10 @@ TEST(BatonBasicOpreation, CheckThreadSaftyReaderWriter)
 
 
 
-TEST(BatonBasicOpreation, CheckReaderFairness)
+TEST(ReaderBatonBasicOpreation, CheckReaderFairness)
 {
-    thunder::synchronization::Baton baton;
-    thunder::synchronization::Baton resBaton;
+    thunder::synchronization::ReaderPriorityBaton baton;
+    thunder::synchronization::ReaderPriorityBaton resBaton;
 
     std::vector<std::thread> threads;
     std::vector<std::thread::id> writerThreadsID;
@@ -218,7 +218,7 @@ TEST(BatonBasicOpreation, CheckReaderFairness)
             for (size_t j = 0; j < count_per_thread; j++)
             {
                 baton.write_access_start();
-                queue.push_back(std::tuple<int, std::thread::id, std::string>(j, std::this_thread::get_id(), gen_random(j % 30)));
+                queue.push_back(std::tuple<int, std::thread::id, std::string>(j, std::this_thread::get_id(), gen_random_readbaton(j % 30)));
                 std::this_thread::sleep_for(std::chrono::microseconds(40));
                 total++;
                 baton.write_access_end();
