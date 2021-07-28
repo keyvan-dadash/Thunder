@@ -3,6 +3,7 @@
 #pragma once
 
 #include <atomic>
+#include <algorithm>
 #include <iostream>
 #include <assert.h>
 #include <memory>
@@ -56,6 +57,9 @@ namespace thunder {
         printf("address is when register %p\n", (void *)local_epoch);
 
         local_epoch->local_epoch.store(this->currentGlobalEpoch(), std::memory_order_relaxed);
+        local_epoch->thread_id = this->number_of_threads_;
+        local_recycle->thread_id = this->number_of_threads_;
+        this->number_of_threads_++;
 
         pthread_setspecific(this->global_epoch_key_, local_epoch);
         pthread_setspecific(this->global_recycle_key_, local_recycle);
@@ -71,7 +75,43 @@ namespace thunder {
     template<typename T>
     void Epoch<T>::unregistedThisThread()
     {
+       std::lock_guard<std::mutex> lock(this->mutex_);
+       struct LocalEpoch* local_epoch = static_cast<LocalEpoch*>(pthread_getspecific(this->global_epoch_key_));
+       assert(local_epoch != NULL);
+
+       this->registered_thread_epoch_.erase(
+        std::remove_if(
+          this->registered_thread_epoch_.begin(),
+          this->registered_thread_epoch_.end(),
+          [&](LocalEpoch* local)
+          {
+            std::cout << "unregister local " << local->thread_id << " " << local_epoch->thread_id << " " << (local->thread_id == local_epoch->thread_id) << std::endl;
+            return local->thread_id == local_epoch->thread_id;
+          }
+        ), this->registered_thread_epoch_.end()
+       );
+
+       
+      auto it = std::find_if(
+          this->registered_thread_recycle_.begin(),
+          this->registered_thread_recycle_.end(),
+          [&](LocalRecycle<T>* local)
+          {
+            std::cout << "unregister recycle " << local->thread_id << " " << local_epoch->thread_id << " " << (local->thread_id == local_epoch->thread_id) << std::endl;
+            return local->thread_id == local_epoch->thread_id;
+          }
+        );
       
+      if (it != this->registered_thread_recycle_.end())
+      {
+        std::cout << "wtff " << (*it)->retire_list_.size() << std::endl;
+      }
+
+       this->registered_thread_recycle_.erase(it, this->registered_thread_recycle_.end());
+
+      std::cout << "another fuck" << std::endl;
+      std::cout << this->registered_thread_epoch_.size() << std::endl;
+      std::cout << this->registered_thread_recycle_.size() << std::endl;
     }
 
     template<typename T>
@@ -134,7 +174,7 @@ namespace thunder {
     }
 
     template<typename T>
-    void Epoch<T>::sync()
+    bool Epoch<T>::sync()
     {
        struct LocalEpoch* local_epoch = static_cast<LocalEpoch*>(pthread_getspecific(this->global_epoch_key_));
 
@@ -148,19 +188,20 @@ namespace thunder {
       
       int64_t currentGlobalEpoch = this->currentGlobalEpoch();
       std::cout << this->registered_thread_epoch_.back()->local_epoch.load(std::memory_order_relaxed) << std::endl;
-      std::cout << this->registered_thread_epoch_.front()->hoho << std::endl;
+      std::cout << this->registered_thread_epoch_.front()->local_epoch.load(std::memory_order_relaxed) << std::endl;
       for (auto thread_local_epoch: this->registered_thread_epoch_) {
         int64_t thread_epoch = thread_local_epoch->local_epoch.load(std::memory_order_relaxed);
         bool isActive = (thread_epoch & EPOCH_ACTIVE_FLAG) != 0;
+        thread_epoch = (thread_epoch ^ EPOCH_ACTIVE_FLAG);
         if (isActive && currentGlobalEpoch != thread_epoch) {
           std::cout << "fuck " << isActive << " " << currentGlobalEpoch << " " << thread_epoch << std::endl;
-          return;
+          return false;
         }
       }
 
-      std::cout << "lskdfjsldkjflksd" << std::endl;
+      std::cout << "lskdfjsldkjflksd " << currentGlobalEpoch << std::endl;
       std::cout << this->registered_thread_recycle_.size() << std::endl;
-      std::cout << this->registered_thread_recycle_.front()->retire_list_.size() << std::endl;
+      std::cout << this->registered_thread_recycle_.back()->retire_list_.size() << std::endl;
 
       this->global_epoch_.store((currentGlobalEpoch + 1) % 3, std::memory_order_relaxed);
       int64_t reclamationEpoch = (this->currentGlobalEpoch() + 1) % 3;
@@ -171,6 +212,7 @@ namespace thunder {
           std::cout << thread_local_recycle->retire_list_.size() << std::endl;
           std::cout << "helooo " << item.second << std::endl;
           if (item.second == reclamationEpoch) {
+            std::cout << "going to delete" << std::endl;
             delete item.first;
           } else {
             std::pair<std::remove_reference_t<T>*, int64_t> not_ready_item;
@@ -181,6 +223,8 @@ namespace thunder {
 
         thread_local_recycle->retire_list_ = std::move(swap_list_);
       }
+
+      return true;
     }
 
     template<typename T>

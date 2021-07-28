@@ -32,13 +32,15 @@ namespace thunder {
 
     struct LocalEpoch
     {
+      int64_t thread_id;
       std::atomic_int64_t local_epoch = 0;
-      int64_t hoho = 10;
     };
 
     template<typename T>
     struct LocalRecycle
     {
+      int64_t thread_id;
+      std::thread::id thread;
       std::vector<std::pair<std::remove_reference_t<T>*, int64_t>> retire_list_;
       ~LocalRecycle()
       {
@@ -76,7 +78,7 @@ namespace thunder {
 
             void finish()
             {
-              this->guard_local_epoch_->local_epoch.store(0, std::memory_order_relaxed);
+              this->guard_local_epoch_->local_epoch.store(f(), std::memory_order_relaxed);
             }
 
           private:
@@ -96,7 +98,7 @@ namespace thunder {
 
         void recycleLocalThread();
 
-        void sync();
+        bool sync();
 
         int64_t currentGlobalEpoch();
 
@@ -112,6 +114,8 @@ namespace thunder {
         std::vector<LocalRecycle<T>*> registered_thread_recycle_;
 
         std::mutex mutex_;
+
+        int64_t number_of_threads_ = 0;
     };
     
   }

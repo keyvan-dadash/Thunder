@@ -158,13 +158,113 @@
 // }
 
 
+// TEST(EpochBasicTest, EpochRelamation)
+// {
+//   struct Data
+//   {
+//     int32_t p;
+//     ~Data()
+//     {
+//       std::cout << "des " << this->p << std::endl;
+//     }
+//   } data_t;
+
+//   std::mutex m_;
+//   std::condition_variable cv;
+
+//   bool isReady = false;
+
+//   int32_t number_of_data = 100;
+
+//   thunder::reclamation::Epoch<Data> ebr;
+
+//   std::vector<std::atomic<Data*>> arr_data(number_of_data);;
+
+//   auto reader_fn = [&]()
+//   {
+//     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+//     ebr.registerThisThread();
+//     std::this_thread::sleep_for(std::chrono::seconds(2));
+
+//     isReady = true;
+//     cv.notify_one();
+
+//     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
+
+//     for(int i=0;i < number_of_data;++i){
+//       ebr.sync();
+//       auto guard = ebr.enterCriticalPath();
+//         auto data = arr_data[i].load(std::memory_order_acquire);
+//         // (*data).p = 43543;
+//     }
+
+//   };
+
+//   auto writer_fn = [&]()
+//   {
+//     ebr.registerThisThread();
+//     for(int i=0;i < number_of_data;++i){
+//         auto d = new Data();
+//         d->p = i;
+//         arr_data[i].store( d );
+//     }
+
+//     std::unique_lock<std::mutex> lock(m_);
+//     cv.wait(lock, [&](){return isReady;});
+
+//     for(int i=0;i < number_of_data;++i){
+//         auto data = arr_data[i].load(std::memory_order_acquire);
+//         ebr.retireObj(data);
+//         // delete data;
+//         // auto d = new Data();
+//         // d->p = i * 2;
+//         // arr_data[i].store( d );
+//     }
+
+//     // std::this_thread::sleep_for(std::chrono::seconds(3));
+//     ebr.unregistedThisThread();
+
+//   };
+
+//   std::thread reader_thread(reader_fn);
+//   std::thread writer_thread(writer_fn);
+
+
+//   writer_thread.join();
+//   reader_thread.join();
+
+
+//   // ebr.sync();
+//   for(int i=0;i < number_of_data;++i){
+//         auto data = arr_data[i].load(std::memory_order_acquire);
+//         std::cout << "call " << (*data).p << std::endl;
+//         (*data).p = 4345343;
+//     }
+
+//   //     for( int i = 0; i < numthread; ++i ){
+// //         th.push_back( std::thread(f, i) );
+// //     }
+    
+// //     for( auto & i: th ){
+// //         i.join();
+// //     }
+// }
+
+int check = 0;
 TEST(EpochBasicTest, EpochRelamation)
 {
   struct Data
   {
-    int32_t p;
+    int32_t p = 10;
+    int32_t* l;
+    Data()
+    {
+      l = &p;
+    }
     ~Data()
     {
+      check++;
       std::cout << "des " << this->p << std::endl;
     }
   } data_t;
@@ -178,51 +278,81 @@ TEST(EpochBasicTest, EpochRelamation)
 
   thunder::reclamation::Epoch<Data> ebr;
 
-  std::vector<std::atomic<Data*>> arr_data(number_of_data);;
+  std::vector<std::atomic<Data*>> arr_data(number_of_data);
+
+  Data* ptr = new Data();
+  Data* ptr2 = new Data();
 
   auto reader_fn = [&]()
   {
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ebr.registerThisThread();
-    std::this_thread::sleep_for(std::chrono::seconds(2));
+    std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
-    isReady = true;
-    cv.notify_one();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
-
-    for(int i=0;i < number_of_data;++i){
-      ebr.sync();
+    {
       auto guard = ebr.enterCriticalPath();
-        auto data = arr_data[i].load(std::memory_order_acquire);
-        (*data).p = 43543;
+      ptr->p *= 2;
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+    std::cout << *(ptr->l) << std::endl;
+
+    *(ptr->l) = 13;
+    EXPECT_TRUE(ebr.sync());
+
+    {
+      auto guard = ebr.enterCriticalPath();
+      ptr2->p *= 7;
+      std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
+    std::cout << *(ptr2->l) << std::endl;
+
+
+    std::unique_lock<std::mutex> lock(m_);
+    cv.wait(lock, [&](){return isReady;});
+
+    *(ptr2->l) = 9;
+    std::cout << "here " << std::endl;
+    EXPECT_TRUE(ebr.sync());
+    EXPECT_FALSE(ebr.sync());
+
+    EXPECT_EQ(check, 1);
+    std::this_thread::sleep_for(std::chrono::milliseconds(60));
+    EXPECT_TRUE(ebr.sync());
+
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
+    std::cout << *(ptr2->l) << std::endl;
+
+    EXPECT_TRUE(ebr.sync());
+
+    EXPECT_EQ(check, 2);
 
   };
 
   auto writer_fn = [&]()
   {
     ebr.registerThisThread();
-    for(int i=0;i < number_of_data;++i){
-        auto d = new Data();
-        d->p = i;
-        arr_data[i].store( d );
+
+    {
+      auto guard = ebr.enterCriticalPath();
+      ptr->p *= 3;
     }
 
-    std::unique_lock<std::mutex> lock(m_);
-    cv.wait(lock, [&](){return isReady;});
+    std::this_thread::sleep_for(std::chrono::milliseconds(40));
+    ebr.retireObj(ptr);
+    std::this_thread::sleep_for(std::chrono::milliseconds(500));
 
-    for(int i=0;i < number_of_data;++i){
-        auto data = arr_data[i].load(std::memory_order_acquire);
-        ebr.retireObj(data);
-        // delete data;
-        // auto d = new Data();
-        // d->p = i * 2;
-        // arr_data[i].store( d );
+    {
+      auto guard = ebr.enterCriticalPath();
+      isReady = true;
+      cv.notify_all();
+      std::this_thread::sleep_for(std::chrono::milliseconds(40));
+      ptr2->p *= 8;
     }
 
-    std::this_thread::sleep_for(std::chrono::seconds(3));
+    // std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    ebr.retireObj(ptr2);
+    std::this_thread::sleep_for(std::chrono::milliseconds(600));
+
 
   };
 
@@ -230,16 +360,16 @@ TEST(EpochBasicTest, EpochRelamation)
   std::thread writer_thread(writer_fn);
 
 
-  reader_thread.join();
   writer_thread.join();
+  reader_thread.join();
 
 
   // ebr.sync();
-  for(int i=0;i < number_of_data;++i){
-        auto data = arr_data[i].load(std::memory_order_acquire);
-        std::cout << "call " << (*data).p << std::endl;
-        (*data).p = 4345343;
-    }
+  // for(int i=0;i < number_of_data;++i){
+  //       auto data = arr_data[i].load(std::memory_order_acquire);
+  //       std::cout << "call " << (*data).p << std::endl;
+  //       (*data).p = 4345343;
+  //   }
 
   //     for( int i = 0; i < numthread; ++i ){
 //         th.push_back( std::thread(f, i) );
