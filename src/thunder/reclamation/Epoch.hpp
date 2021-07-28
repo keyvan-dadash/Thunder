@@ -2,12 +2,14 @@
 #pragma once
 
 #include <atomic>
+#include <iostream>
 #include <cstddef>
 #include <memory>
 #include <thread>
 #include <mutex>
 #include <vector>
 #include <new>
+#include <functional>
 
 #ifdef __cpp_lib_hardware_interference_size
     using std::hardware_constructive_interference_size;
@@ -30,13 +32,18 @@ namespace thunder {
 
     struct LocalEpoch
     {
-      alignas(hardware_destructive_interference_size) std::atomic_int64_t local_epoch = 0;
+      std::atomic_int64_t local_epoch = 0;
+      int64_t hoho = 10;
     };
 
     template<typename T>
     struct LocalRecycle
     {
       std::vector<std::pair<std::remove_reference_t<T>*, int64_t>> retire_list_;
+      ~LocalRecycle()
+      {
+        std::cout << "what?" << std::endl;
+      }
     };
 
 
@@ -50,17 +57,21 @@ namespace thunder {
         ~Epoch();
 
 
+
         class epoch_guard
         {
           public:
-            epoch_guard(LocalEpoch* local) : guard_local_epoch_(local)
+
+            epoch_guard(LocalEpoch* local, std::function<int64_t()> f) : guard_local_epoch_(local), f(f)
             {
 
             }
 
             ~epoch_guard()
             {
+              std::cout << "guard " << this->guard_local_epoch_->local_epoch.load(std::memory_order_relaxed) << std::endl;
               this->finish();
+              std::cout << "after guard des" << this->guard_local_epoch_->local_epoch.load(std::memory_order_relaxed) << std::endl;
             }
 
             void finish()
@@ -70,6 +81,8 @@ namespace thunder {
 
           private:
             LocalEpoch* guard_local_epoch_;
+
+            std::function<int64_t()> f;
         };
 
 
