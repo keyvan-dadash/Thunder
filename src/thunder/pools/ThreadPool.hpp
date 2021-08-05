@@ -5,6 +5,7 @@
 #include <memory>
 #include <thread>
 #include <future>
+#include <vector>
 
 #include "thunder/datastructures/AtomicQueue.hpp"
 
@@ -27,10 +28,7 @@ namespace thunder {
 
     public:
 
-      ThreadPool(ThreadPoolOptions options) : options_(options)
-      {
-
-      }
+      ThreadPool(ThreadPoolOptions options);
 
       ThreadPool(ThreadPool&& other) = delete;
       ThreadPool& operator=(ThreadPool&& rhs) = delete;
@@ -39,11 +37,7 @@ namespace thunder {
       ThreadPool(const ThreadPool& other) = delete;
       ThreadPool& operator=(const ThreadPool& rhs) = delete;
 
-      ~ThreadPool()
-      {
-
-      }
-
+      ~ThreadPool();
 
       template<typename FuncType>
       std::future<
@@ -53,11 +47,17 @@ namespace thunder {
 
       void handleTasks();
 
+      void done();
+
     private:
 
       ThreadPoolOptions options_;
 
-      thunder::datastructures::AtomicQueue<Task> tasks_;
+      std::vector<std::thread> threads_;
+
+      static thread_local std::unique_ptr<thunder::datastructures::AtomicQueue<Task>> local_tasks_queue_ptr_;
+
+      thunder::datastructures::AtomicQueue<Task> pool_tasks_queue_;
 
       bool isRunning_ = true;
 
