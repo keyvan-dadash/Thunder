@@ -154,6 +154,58 @@ namespace thunder {
 
 
     template<typename Element>
+    bool AtomicQueue<Element>::pop_and_get_front(Element& element)
+    {
+      if (this->size_ == 0 || this->head_.get() == nullptr) {
+        return NULL; 
+      }
+
+      Node *next{this->head_.load(std::memory_order_relaxed)};
+      while (next->next != nullptr && next->next->next != nullptr) {
+        next = next->next;
+      }
+
+      element = next->next->element;
+
+      delete next->next;
+      next->next = nullptr;
+
+      this->size_--;
+      return element;
+    }
+
+    template<typename Element>
+    bool AtomicQueue<Element>::pop_and_get_back(Element& element)
+    {
+      if (this->size_ == 0 || this->head_.get() == nullptr) {
+        return NULL; 
+      }
+
+      Node *next{this->head_.load(std::memory_order_relaxed)};
+      element = next->element;
+
+      auto head = head_.load(std::memory_order_relaxed);
+
+      while (true) {
+        if (!head_.compare_exchange_strong(
+          head,
+          head->next,
+          std::memory_order_acq_rel,
+          std::memory_order_relaxed
+        )) {
+          if (head == nullptr) {
+            break;
+          }
+        }
+      }
+
+      this->size_--;
+      return element;
+    }
+
+
+
+    template<typename Element>
     bool AtomicQueue<Element>::isEmpty()
     {
       return this->size_.load(std::memory_order_relaxed) > 0 ? false : true;
