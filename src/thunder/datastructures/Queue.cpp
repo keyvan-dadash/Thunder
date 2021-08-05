@@ -90,6 +90,18 @@ namespace thunder {
     }
 
     template<typename Element>
+    std::shared_ptr<Element> Queue<Element>::back()
+    {
+      if (this->size_ == 0 || this->head_.get() == nullptr) {
+        return std::make_shared<Element>(); 
+      }
+
+      Node *next{this->head_.get()};
+
+      return std::make_shared<Element>(next->element);
+    }
+
+    template<typename Element>
     int Queue<Element>::pop()
     {
       if (this->size_ == 0 || this->head_.get() == nullptr) {
@@ -114,6 +126,74 @@ namespace thunder {
 
       this->size_--;
       return static_cast<int>(BaseQueueStatus::ELEMENT_POPED_SUCCESSFULLY);
+    }
+
+    template<typename Element>
+    int Queue<Element>::pop_back()
+    {
+      if (this->size_ == 0 || this->head_.get() == nullptr) {
+        return QueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY;
+      }
+
+      Node *next{this->head_.get()};
+
+      if (next->next == nullptr) {
+        this->head_.reset();
+
+      } else if (next->next->next == nullptr) {
+        Node *tmp = std::exchange(next->next, nullptr);
+        delete tmp;
+
+      } else {
+        return static_cast<int>(BaseQueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+      }
+
+      this->size_--;
+      return static_cast<int>(BaseQueueStatus::ELEMENT_POPED_SUCCESSFULLY);
+    }
+
+    template<typename Element>
+    bool Queue<Element>::pop_and_get_front(Element& element)
+    {
+      if (this->size_ == 0 || this->head_.get() == nullptr) {
+        return NULL; 
+      }
+
+      Node *next{this->head_.get()};
+      while (next->next != nullptr && next->next->next != nullptr) {
+        next = next->next;
+      }
+
+      element = next->next->element;
+
+      delete next->next;
+      next->next = nullptr;
+
+      this->size_--;
+      return element;
+    }
+
+    template<typename Element>
+    bool Queue<Element>::pop_and_get_back(Element& element)
+    {
+      if (this->size_ == 0 || this->head_.get() == nullptr) {
+        return NULL; 
+      }
+
+      Node *next{this->head_.get()};
+      element = next->element;
+
+      if (next->next != nullptr)
+      {
+        this->head_.reset(next->next);
+      }
+      else
+      {
+        this->head_.reset();
+      }
+
+      this->size_--;
+      return element;
     }
 
     template<typename Element>
