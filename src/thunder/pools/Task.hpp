@@ -20,12 +20,12 @@ namespace thunder {
         
       }
 
-      Task(Task&& other) : Impl_(std::move(other.Impl_))
+      Task(Task&& other) noexcept : Impl_(std::move(other.Impl_))
       {
         
       }
 
-      Task* operator=(Task&& rhs)
+      Task* operator=(Task&& rhs) noexcept
       {
         this->Impl_ = std::exchange(rhs.Impl_, this->Impl_);
       }

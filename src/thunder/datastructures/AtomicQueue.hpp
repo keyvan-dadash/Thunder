@@ -43,7 +43,11 @@ namespace thunder {
           
           std::shared_ptr<Element> front() override;
 
+          std::shared_ptr<Element> back();
+
           int pop() override;
+
+          int pop_back();
 
           bool isEmpty() override;
 

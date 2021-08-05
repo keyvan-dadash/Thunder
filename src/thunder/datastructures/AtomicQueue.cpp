@@ -77,6 +77,19 @@ namespace thunder {
     }
 
     template<typename Element>
+    std::shared_ptr<Element> 
+    AtomicQueue<Element>::back()
+    {
+      if (this->size_.load(std::memory_order_relaxed) == 0 || this->head_.load(std::memory_order_relaxed) == nullptr) {
+        return std::make_shared<Element>(); 
+      }
+
+      Node *next{this->head_.load(std::memory_order_relaxed)};
+      
+      return std::make_shared<Element>(next->element);
+    }
+
+    template<typename Element>
     int AtomicQueue<Element>::pop()
     {
       if (this->size_.load(std::memory_order_relaxed) == 0 ||
@@ -103,6 +116,36 @@ namespace thunder {
 
       } else {
         return static_cast<int>(BaseAtomicQueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+      }
+
+      this->size_.fetch_sub(1);
+      return static_cast<int>(BaseAtomicQueueStatus::ELEMENT_POPED_SUCCESSFULLY);
+    }
+
+    template<typename Element>
+    int AtomicQueue<Element>::pop_back()
+    {
+      if (this->size_.load(std::memory_order_relaxed) == 0 ||
+       this->head_.load(std::memory_order_relaxed) == nullptr) {
+        return BaseAtomicQueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY;
+      }
+      
+
+      Node *next{this->head_.load(std::memory_order_relaxed)};
+
+      auto head = head_.load(std::memory_order_relaxed);
+
+      while (true) {
+        if (!head_.compare_exchange_strong(
+          head,
+          head->next,
+          std::memory_order_acq_rel,
+          std::memory_order_relaxed
+        )) {
+          if (head == nullptr) {
+            break;
+          }
+        }
       }
 
       this->size_.fetch_sub(1);

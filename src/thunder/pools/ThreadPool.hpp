@@ -59,7 +59,7 @@ namespace thunder {
 
       thunder::datastructures::AtomicQueue<Task> tasks_;
 
-      bool isRunning_;
+      bool isRunning_ = true;
 
 
     };
