@@ -69,6 +69,7 @@ namespace thunder {
           };
 
           std::unique_ptr<Node> head_ = nullptr;
+          std::unique_ptr<Node> tail_ = nullptr;
           size_t size_{0};
       };
 

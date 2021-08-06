@@ -15,6 +15,7 @@ namespace thunder {
     Queue<Element>::Queue(Queue<Element>&& rhs) noexcept
       : size_( std::move(rhs.size_ ))
       , head_( std::move(rhs.head_ ))
+      , tail_( std::move(rhs.tail_))
     {
       
     }
@@ -25,6 +26,7 @@ namespace thunder {
     {
       this->size_( std::move(rhs.size_) );
       this->head_.reset( std::move(rhs.head_) );
+      this->tail_.reset( std::move(rhs.tail_) );
 
       return *this;
     }
@@ -50,6 +52,10 @@ namespace thunder {
       node->next = this->head_.release();
 
       this->head_.reset(node.get());
+      if (this->size_ == 0)
+      {
+        this->tail_.reset(node.get());
+      }
       node.release();
       this->size_++;
 
@@ -68,6 +74,11 @@ namespace thunder {
       node->next = this->head_.release();
 
       this->head_.reset(node.get());
+      if (this->size_ == 0)
+      {
+        this->tail_.reset(node.get());
+      }
+      
       node.release();
       this->size_++;
 
@@ -81,11 +92,7 @@ namespace thunder {
         return std::make_shared<Element>(); 
       }
 
-      Node *next{this->head_.get()};
-      while (next->next != nullptr) {
-        next = next->next;
-      }
-
+      Node *next{this->tail_.get()};
       element = next->element;
     }
 
@@ -122,7 +129,7 @@ namespace thunder {
       this->size_--;
       return element;
     }
-    
+
     template<typename Element>
     bool Queue<Element>::isEmpty()
     {
