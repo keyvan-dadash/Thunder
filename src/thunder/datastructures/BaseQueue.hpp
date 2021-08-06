@@ -31,17 +31,11 @@ namespace thunder {
           template <typename T>
           int tryPush(T&& t, int maxSize);
 
-          virtual std::shared_ptr<Element> front() = 0;
+          virtual void front(Element& element) = 0;
 
-          virtual std::shared_ptr<Element> back() = 0;
+          virtual void back(Element& element) = 0;
 
-          virtual int pop() = 0;
-
-          virtual int pop_back() = 0;
-
-          virtual bool pop_and_get_front(Element& element) = 0;
-
-          virtual bool pop_and_get_back(Element& element) = 0;
+          virtual int pop(Element& element) = 0;
 
           virtual bool isEmpty() = 0;
 

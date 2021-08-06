@@ -43,17 +43,11 @@ namespace thunder {
           template <typename T>
           int tryPush(T&& t, int maxSize);
           
-          std::shared_ptr<Element> front() override;
+          void front(Element& element) override;
 
-          std::shared_ptr<Element> back() override;
+          void back(Element& element) override;
 
-          int pop() override;
-
-          int pop_back() override;
-
-          bool pop_and_get_front(Element& element) override;
-
-          bool pop_and_get_back(Element& element) override;
+          int pop(Element& element) override;
 
           bool isEmpty() override;
 
