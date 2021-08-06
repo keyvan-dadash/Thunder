@@ -3,6 +3,8 @@
 
 #include <atomic>
 #include <memory>
+#include <utility>
+
 
 #include <thunder/datastructures/BaseAtomicQueue.hpp>
 
@@ -17,9 +19,11 @@ namespace thunder {
       class AtomicQueue : BaseAtomicQueue<Element>
       {
         public:
-          explicit AtomicQueue() = default;
+          explicit AtomicQueue();
 
-          ~AtomicQueue() = default;
+          explicit AtomicQueue(int64_t maxSize);
+
+          ~AtomicQueue();
 
           using BaseAtomicQueueStatus = typename BaseAtomicQueue<Element>::BaseAtomicQueueStatus;
 
@@ -41,23 +45,22 @@ namespace thunder {
           template<typename T>
           int tryPush(T&& t, int maxSize);
           
-          std::shared_ptr<Element> front() override;
+          void front(Element& element) override;
 
-          std::shared_ptr<Element> back() override;
+          void back(Element& element) override;
 
-          int pop() override;
-
-          int pop_back() override;
-
-          bool pop_and_get_front(Element& element) override;
-
-          bool pop_and_get_back(Element& element) override;
+          int pop(Element& element) override;
 
           bool isEmpty() override;
 
           int getSizeOfQueue() override;
 
         private:
+
+          int64_t getSizeNearPowerTwo(int64_t input_size);
+
+          bool allocateBuffer();
+
           struct Node {
             public:    
               Element element = NULL;
@@ -72,7 +75,16 @@ namespace thunder {
               Node *next = nullptr;
           };
 
-          std::atomic<Node*> head_ = nullptr;
+          std::atomic<int16_t> head_;
+          std::atomic<int16_t> tail_; 
+
+
+          int64_t maxSize_ = 128;
+
+          std::allocator<Element> alloca_;
+
+          Element* elementArray_;
+
           std::atomic<size_t> size_{0};
 
       };

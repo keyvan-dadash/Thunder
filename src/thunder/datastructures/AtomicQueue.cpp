@@ -12,6 +12,27 @@ namespace thunder {
 
   namespace datastructures {
 
+
+    template<typename Element>
+    AtomicQueue<Element>::AtomicQueue()
+    {
+      this->allocateBuffer();
+    }
+
+    template<typename Element>
+    AtomicQueue<Element>::AtomicQueue(int64_t maxSize)
+    {
+      this->maxSize_ = this->getSizeNearPowerTwo(maxSize);
+      this->allocateBuffer();
+    }
+
+
+    template<typename Element>
+    AtomicQueue<Element>::~AtomicQueue()
+    {
+      this->alloca_.deallocate(this->elementArray_, this->maxSize_);
+    }
+
     template<typename Element>
     template<typename T> 
     int AtomicQueue<Element>::push(T&& t)
@@ -19,6 +40,8 @@ namespace thunder {
         std::unique_ptr<Node> node(new Node(std::forward<T>(t)));
         auto head = this->head_.load(std::memory_order_relaxed);
         node->next = head;
+
+        
 
         while (true) {
             if (head_.compare_exchange_strong(
@@ -215,6 +238,26 @@ namespace thunder {
     int AtomicQueue<Element>::getSizeOfQueue()
     {
       return this->size_.load(std::memory_order_relaxed);
+    }
+
+
+    template<typename Element>
+    int64_t AtomicQueue<Element>::getSizeNearPowerTwo(int64_t input_size)
+    {
+      input_size--;
+      input_size |= input_size >> 1;
+      input_size |= input_size >> 2;
+      input_size |= input_size >> 4;
+      input_size |= input_size >> 8;
+      input_size |= input_size >> 16;
+      input_size |= input_size >> 32;
+      return ++input_size;
+    }
+
+    template<typename Element>
+    bool AtomicQueue<Element>::allocateBuffer()
+    {
+      this->elementArray_ = this->alloca_.allocate(this->maxSize_);
     }
 
   }
