@@ -55,9 +55,24 @@ namespace thunder {
 
         private:
 
-          int64_t getSizeNearPowerTwo(int64_t input_size);
+          template<typename T>
+          void push_atomic(T&& t, int head);
 
-          bool allocateBuffer();
+          void pop_atomic(Element& elem, int tail);
+
+
+          class CellStates 
+          {
+            public:
+              enum States
+              {
+                STORED = 1,
+                STORING,
+                LOADED,
+                LOADING,
+                EMPTY
+              };
+          };
 
           struct Node {
             public:    
@@ -76,7 +91,11 @@ namespace thunder {
           std::atomic<int16_t> head_;
           std::atomic<int16_t> tail_; 
 
-          Element elementArray_[QueueSize];
+          typedef typename std::aligned_storage_t<sizeof(Element), alignof(Element)> ElementStorage;
+
+          ElementStorage elementArray_[QueueSize];
+
+          std::atomic_int8_t states_[QueueSize];
 
           std::atomic<size_t> size_{0};
 

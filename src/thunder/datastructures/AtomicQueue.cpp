@@ -16,26 +16,28 @@ namespace thunder {
     template <typename Element, int QueueSize>
     AtomicQueue<Element, QueueSize>::AtomicQueue()
     {
-      this->allocateBuffer();
     }
 
 
     template <typename Element, int QueueSize>
     AtomicQueue<Element, QueueSize>::~AtomicQueue()
     {
-      this->alloca_.deallocate(this->elementArray_, QueueSize);
     }
 
     template <typename Element, int QueueSize>
     template<typename T> 
     int AtomicQueue<Element, QueueSize>::push(T&& t)
     {
+
+      //TODO: move this logic to tryPush and add logic to discard and replace 
       auto head = this->head_.load(std::memory_order_relaxed);
-      if ((head - 
+      if (std::abs(head - 
             this->tail_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
       {
         return BaseAtomicQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE;
       }
+
+
 
       do {
         if ((head - 
@@ -45,9 +47,7 @@ namespace thunder {
         }
       } while(!this->head_.compare_exchange_strong(head, head + 1, std::memory_order_release));
 
-      new (&(this->elementArray_[head])) Element(std::forward<T>(t));
-
-
+      this->push_atomic(std::forward<T>(t), head);
 
         // std::unique_ptr<Node> node(new Node(std::forward<T>(t)));
         // auto head = this->head_.load(std::memory_order_relaxed);
@@ -151,7 +151,9 @@ namespace thunder {
         }
       } while(!this->head_.compare_exchange_strong(tail, tail + 1, std::memory_order_release));
 
-      new (&(this->elementArray_[head])) Element(std::forward<T>(t));
+      this->pop_atomic(element, tail);
+
+      // new (&(this->elementArray_[head])) Element(std::forward<T>(t));
 
 
       // if (this->size_.load(std::memory_order_relaxed) == 0 ||
@@ -265,7 +267,63 @@ namespace thunder {
       // return element;
     // }
 
+    template <typename Element, int QueueSize>
+    template<typename T>
+    void AtomicQueue<Element, QueueSize>::push_atomic(T&& t, int head)
+    {
 
+      std::atomic_int8_t state = this->states_[head];
+
+      while (true)
+      {
+        int8_t expectState = CellStates::EMPTY;
+        if (state.compare_exchange_strong(
+          expectState,
+          CellStates::STORING,
+          std::memory_order_acquire,
+          std::memory_order_relaxed
+        )) {
+          new ( std::addressof(this->elementArray_[head]) ) Element( std::forward<T>(t) );
+          state.store(CellStates::STORED, std::memory_order_release);
+          return;
+        }
+        else {
+          //TODO: some hybrid mutexs
+        }
+      }
+    }
+
+    template <typename Element, int QueueSize>
+    void AtomicQueue<Element, QueueSize>::pop_atomic(Element& elem, int tail)
+    {
+      
+      std::atomic_int8_t state = this->states_[tail];
+
+      while (true)
+      {
+        int8_t expectState = CellStates::STORED;
+        if (state.compare_exchange_strong(
+          expectState,
+          CellStates::LOADING,
+          std::memory_order_acquire,
+          std::memory_order_relaxed
+        )) {
+          elem(
+            std::move(*std::launder(reinterpret_cast<Element*>( std::addressof(this->elementArray_[tail]) )))
+          );
+
+          std::destroy_at(
+            std::launder(reinterpret_cast<Element*>( std::addressof(this->elementArray_[tail]) ))
+          );
+
+          state.store(CellStates::EMPTY, std::memory_order_release);
+          return;
+        }
+        else {
+          //TODO: some hybrid mutexs
+        }
+      }
+    }
 
     template <typename Element, int QueueSize>
     bool AtomicQueue<Element, QueueSize>::isEmpty()
@@ -277,26 +335,6 @@ namespace thunder {
     int AtomicQueue<Element, QueueSize>::getSizeOfQueue()
     {
       return this->size_.load(std::memory_order_relaxed);
-    }
-
-
-    template <typename Element, int QueueSize>
-    int64_t AtomicQueue<Element, QueueSize>::getSizeNearPowerTwo(int64_t input_size)
-    {
-      input_size--;
-      input_size |= input_size >> 1;
-      input_size |= input_size >> 2;
-      input_size |= input_size >> 4;
-      input_size |= input_size >> 8;
-      input_size |= input_size >> 16;
-      input_size |= input_size >> 32;
-      return ++input_size;
-    }
-
-    template <typename Element, int QueueSize>
-    bool AtomicQueue<Element, QueueSize>::allocateBuffer()
-    {
-      this->elementArray_ = this->alloca_.allocate(QueueSize);
     }
 
   }
