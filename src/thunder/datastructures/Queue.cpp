@@ -34,14 +34,14 @@ namespace thunder {
     template<typename Element>
     Queue<Element>::~Queue()
     {
-      if (this->size_ > 0 && this->head_.get() != nullptr) {
-        while (this->size_ > 0)
-        {
-          if (this->pop() == QueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY) {
-            return;
-          }
-        }
-      }
+      // if (this->size_ > 0 && this->head_.get() != nullptr) {
+      //   while (this->size_ > 0)
+      //   {
+      //     if (this->pop() == QueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY) {
+      //       return;
+      //     }
+      //   }
+      // }
     }
     
     template<typename Element>
@@ -89,7 +89,7 @@ namespace thunder {
     void Queue<Element>::front(Element& element)
     {
       if (this->size_ == 0 || this->head_.get() == nullptr) {
-        return std::make_shared<Element>(); 
+        return; 
       }
 
       Node *next{this->tail_.get()};
@@ -100,7 +100,7 @@ namespace thunder {
     void Queue<Element>::back(Element& element)
     {
       if (this->size_ == 0 || this->head_.get() == nullptr) {
-        return std::make_shared<Element>(); 
+        return;
       }
 
       Node *next{this->head_.get()};
@@ -127,7 +127,8 @@ namespace thunder {
       next->next = nullptr;
 
       this->size_--;
-      return element;
+
+      return QueueStatus::ELEMENT_POPED_SUCCESSFULLY;
     }
 
     template<typename Element>

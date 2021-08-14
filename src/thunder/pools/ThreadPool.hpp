@@ -55,9 +55,9 @@ namespace thunder {
 
       std::vector<std::thread> threads_;
 
-      static thread_local std::unique_ptr<thunder::datastructures::AtomicQueue<Task>> local_tasks_queue_ptr_;
+      // static thread_local std::unique_ptr<thunder::datastructures::AtomicQueue<Task>> local_tasks_queue_ptr_;
 
-      thunder::datastructures::AtomicQueue<Task> pool_tasks_queue_;
+      // thunder::datastructures::AtomicQueue<Task> pool_tasks_queue_;
 
       bool isRunning_ = true;
 

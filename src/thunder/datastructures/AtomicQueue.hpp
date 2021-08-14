@@ -15,7 +15,7 @@ namespace thunder {
 
 
 
-      template <typename Element, int QueueSize = 128>
+      template <typename Element, std::size_t QueueSize = 128>
       class AtomicQueue : BaseAtomicQueue<Element>
       {
         public:

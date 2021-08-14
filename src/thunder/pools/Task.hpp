@@ -15,20 +15,22 @@ namespace thunder {
       Task() = default;
 
       template<typename FuncType>
-      Task(FuncType&& func) : Impl_(new Impl_type<FuncType>(std::move(func)))
+      Task(FuncType&& func) 
+      // : Impl_(new Impl_type<FuncType>(std::move(func)))
       {
         
       }
 
-      Task(Task&& other) noexcept : Impl_(std::move(other.Impl_))
+      Task(Task&& other) noexcept 
+      // : Impl_(std::move(other.Impl_))
       {
         
       }
 
-      Task* operator=(Task&& rhs) noexcept
-      {
-        this->Impl_ = std::exchange(rhs.Impl_, this->Impl_);
-      }
+      // Task* operator=(Task&& rhs) noexcept
+      // {
+      //   this->Impl_ = std::exchange(rhs.Impl_, this->Impl_);
+      // }
 
 
       Task(const Task& other) = delete;
@@ -48,13 +50,14 @@ namespace thunder {
       };
 
       template<typename Func>
-      struct Impl_type {
+      struct Impl_type : Impl_base {
         Func func;
 
-        Impl_type(Func&& func) : func(std::move(func));
+        Impl_type(Func&& func) 
+        // : func(std::move(func))
          {}
 
-        void run() override
+        void run()
         {
           func();
         }

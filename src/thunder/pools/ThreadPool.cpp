@@ -48,14 +48,14 @@ namespace thunder {
 
       std::future<funcResultType> result(task.get_future());
 
-      if (local_tasks_queue_ptr_ )
-      {
-        local_tasks_queue_ptr_->push(std::move(task));
-      }
-      else
-      {
-        pool_tasks_queue_.push(std::move(task));
-      }
+      // if (local_tasks_queue_ptr_ )
+      // {
+        // local_tasks_queue_ptr_->push(std::move(task));
+      // }
+      // else
+      // {
+        // pool_tasks_queue_.push(std::move(task));
+      // }
 
       return result;
     }
@@ -63,26 +63,26 @@ namespace thunder {
     void ThreadPool::handleTasks()
     {
 
-      local_tasks_queue_ptr_.reset(new thunder::datastructures::AtomicQueue<Task>());
+      // local_tasks_queue_ptr_.reset(new thunder::datastructures::AtomicQueue<Task>());
 
       while(this->isRunning_)
       {
         std::shared_ptr<Task> task = nullptr;
-        if (!local_tasks_queue_ptr_->isEmpty())
-        {
-          task = local_tasks_queue_ptr_->front();
-          local_tasks_queue_ptr_->pop(); //TODO: change all quques api
-        }
-        else 
-        {
-          task = pool_tasks_queue_.front();
-          pool_tasks_queue_.pop();
-        }
+        // if (!local_tasks_queue_ptr_->isEmpty())
+        // {
+          // task = local_tasks_queue_ptr_->front();
+          // local_tasks_queue_ptr_->pop(); //TODO: change all quques api
+        // }
+        // else 
+        // {
+          // task = pool_tasks_queue_.front();
+          // pool_tasks_queue_.pop();
+        // }
 
-        if (task != nullptr)
-        {
-          (task.get())->operator()();
-        }
+        // if (task != nullptr)
+        // {
+        //   (task.get())->operator()();
+        // }
       }
       
     }

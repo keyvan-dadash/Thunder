@@ -29,7 +29,7 @@ TEST(AtomicQueueFailureOperations, MultiThreadedQueueSizeCheck)
         thunder::datastructures::AtomicQueue<int> queue;
 
         std::function<void(int)> operation = [&](int element) {
-            queue.push(element);
+            EXPECT_EQ(queue.push(element), thunder::datastructures::AtomicQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
         };
 
         auto threads = createNumberOfThreadAndDoOperation(std::thread::hardware_concurrency(), operation, 3);
@@ -45,7 +45,7 @@ TEST(AtomicQueueFailureOperations, MultiThreadedQueueSizeCheck)
         thunder::datastructures::AtomicQueue<char> queue;
 
         std::function<void(char)> operation = [&](char element) {
-            queue.push(element);
+             EXPECT_EQ(queue.push(element), thunder::datastructures::AtomicQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
         };
 
         auto threads = createNumberOfThreadAndDoOperation(std::thread::hardware_concurrency(), operation, 'c');
@@ -60,7 +60,7 @@ TEST(AtomicQueueFailureOperations, MultiThreadedQueueSizeCheck)
         thunder::datastructures::AtomicQueue<float> queue;
 
         std::function<void(float)> operation = [&](float element) {
-            queue.push(element);
+             EXPECT_EQ(queue.push(element), thunder::datastructures::AtomicQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
         };
 
         auto threads = createNumberOfThreadAndDoOperation(std::thread::hardware_concurrency(), operation, (float)5.1);
@@ -75,7 +75,7 @@ TEST(AtomicQueueFailureOperations, MultiThreadedQueueSizeCheck)
         thunder::datastructures::AtomicQueue<std::string> queue;
 
         std::function<void(std::string)> operation = [&](std::string element) {
-            queue.push(element);
+             EXPECT_EQ(queue.push(element), thunder::datastructures::AtomicQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
         };
 
         auto threads = createNumberOfThreadAndDoOperation(std::thread::hardware_concurrency(), operation, "foo");

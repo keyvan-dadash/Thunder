@@ -13,26 +13,35 @@ namespace thunder {
   namespace datastructures {
 
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     AtomicQueue<Element, QueueSize>::AtomicQueue()
     {
+      for (int i = 0; i < QueueSize; i++)
+      {
+        this->states_[i].store(CellStates::EMPTY, std::memory_order_release);
+      }
+      this->head_.store(0, std::memory_order_release);
+      this->tail_.store(0, std::memory_order_release);
     }
 
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     AtomicQueue<Element, QueueSize>::~AtomicQueue()
     {
+
     }
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     template<typename T> 
     int AtomicQueue<Element, QueueSize>::push(T&& t)
     {
 
       //TODO: move this logic to tryPush and add logic to discard and replace 
       auto head = this->head_.load(std::memory_order_relaxed);
-      if (std::abs(head - 
-            this->tail_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
+      // if (std::abs(head - 
+      //       this->tail_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
+      // {
+      if (this->size_ > QueueSize)
       {
         return BaseAtomicQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE;
       }
@@ -40,14 +49,20 @@ namespace thunder {
 
 
       do {
-        if ((head - 
-            this->tail_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
+        // if ((head - 
+        //     this->tail_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
+        // {
+        if (this->size_ > QueueSize)
         {
           return BaseAtomicQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE;
         }
       } while(!this->head_.compare_exchange_strong(head, head + 1, std::memory_order_release));
 
       this->push_atomic(std::forward<T>(t), head);
+
+      this->size_.fetch_add(1, std::memory_order_release);
+
+      return BaseAtomicQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY;
 
         // std::unique_ptr<Node> node(new Node(std::forward<T>(t)));
         // auto head = this->head_.load(std::memory_order_relaxed);
@@ -69,7 +84,7 @@ namespace thunder {
         // }
     }
 
-    template< typename Element>
+    template< typename Element, std::size_t QueueSize>
     template<typename T>
     int AtomicQueue<Element, QueueSize>::tryPush(T&& t, int maxSize)
     {
@@ -95,7 +110,8 @@ namespace thunder {
         // }
     }
 
-    template <typename Element, int QueueSize>
+    //TODO: think about front and back api's
+    template <typename Element, std::size_t QueueSize>
     void 
     AtomicQueue<Element, QueueSize>::front(Element& element)
     {
@@ -107,14 +123,14 @@ namespace thunder {
 
       while (true)
       {
-        element = this->elementArray_[tail];
+        // element = this->elementArray_[tail];
         if (tail == this->tail_.load(std::memory_order_relaxed)) break;
         tail = this->tail_.load(std::memory_order_relaxed);
         if (this->size_.load(std::memory_order_relaxed) <= 0) break;
       }
     }
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     void
     AtomicQueue<Element, QueueSize>::back(Element& element)
     {
@@ -126,32 +142,40 @@ namespace thunder {
 
       while (true)
       {
-        element = this->elementArray_[head];
+        // element = this->elementArray_[head];
         if (head == this->head_.load(std::memory_order_relaxed)) break;
         head = this->head_.load(std::memory_order_relaxed);
         if (this->size_.load(std::memory_order_relaxed) <= 0) break;
       }
     }
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     int AtomicQueue<Element, QueueSize>::pop(Element& element)
     {
       auto tail = this->tail_.load(std::memory_order_relaxed);
-      if (std::abs(tail - 
-            this->head_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
+      // if (std::abs(tail - 
+      //       this->head_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
+      // {
+      if (this->size_ > QueueSize)
       {
         return BaseAtomicQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE;
       }
 
       do {
-        if (std::abs(tail - 
-            this->head_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
+        // if (std::abs(tail - 
+        //   this->head_.load(std::memory_order_relaxed)) <= 1 && this->size_ > 0)
+        // {
+        if (this->size_ > QueueSize)
         {
           return BaseAtomicQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE;
         }
-      } while(!this->head_.compare_exchange_strong(tail, tail + 1, std::memory_order_release));
+      } while(!this->tail_.compare_exchange_strong(tail, tail + 1, std::memory_order_release));
 
       this->pop_atomic(element, tail);
+
+      this->size_.fetch_sub(1, std::memory_order_release);
+
+      return BaseAtomicQueueStatus::ELEMENT_POPED_SUCCESSFULLY;
 
       // new (&(this->elementArray_[head])) Element(std::forward<T>(t));
 
@@ -267,12 +291,12 @@ namespace thunder {
       // return element;
     // }
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     template<typename T>
     void AtomicQueue<Element, QueueSize>::push_atomic(T&& t, int head)
     {
 
-      std::atomic_int8_t state = this->states_[head];
+      std::atomic_int8_t& state = this->states_[head];
 
       while (true)
       {
@@ -293,11 +317,11 @@ namespace thunder {
       }
     }
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     void AtomicQueue<Element, QueueSize>::pop_atomic(Element& elem, int tail)
     {
       
-      std::atomic_int8_t state = this->states_[tail];
+      std::atomic_int8_t& state = this->states_[tail];
 
       while (true)
       {
@@ -308,9 +332,7 @@ namespace thunder {
           std::memory_order_acquire,
           std::memory_order_relaxed
         )) {
-          elem(
-            std::move(*std::launder(reinterpret_cast<Element*>( std::addressof(this->elementArray_[tail]) )))
-          );
+          elem = std::move(*std::launder(reinterpret_cast<Element*>( std::addressof(this->elementArray_[tail]) )));
 
           std::destroy_at(
             std::launder(reinterpret_cast<Element*>( std::addressof(this->elementArray_[tail]) ))
@@ -325,16 +347,16 @@ namespace thunder {
       }
     }
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     bool AtomicQueue<Element, QueueSize>::isEmpty()
     {
-      return this->size_.load(std::memory_order_relaxed) > 0 ? false : true;
+      return this->size_.load(std::memory_order_acquire) > 0 ? false : true;
     }
 
-    template <typename Element, int QueueSize>
+    template <typename Element, std::size_t QueueSize>
     int AtomicQueue<Element, QueueSize>::getSizeOfQueue()
     {
-      return this->size_.load(std::memory_order_relaxed);
+      return this->size_.load(std::memory_order_acquire);
     }
 
   }
