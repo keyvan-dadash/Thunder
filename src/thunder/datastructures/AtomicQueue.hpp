@@ -15,13 +15,11 @@ namespace thunder {
 
 
 
-      template <typename Element>
+      template <typename Element, int QueueSize = 128>
       class AtomicQueue : BaseAtomicQueue<Element>
       {
         public:
           explicit AtomicQueue();
-
-          explicit AtomicQueue(int64_t maxSize);
 
           ~AtomicQueue();
 
@@ -78,12 +76,7 @@ namespace thunder {
           std::atomic<int16_t> head_;
           std::atomic<int16_t> tail_; 
 
-
-          int64_t maxSize_ = 128;
-
-          std::allocator<Element> alloca_;
-
-          Element* elementArray_;
+          Element elementArray_[QueueSize];
 
           std::atomic<size_t> size_{0};
 
