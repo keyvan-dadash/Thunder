@@ -11,25 +11,40 @@ namespace thunder {
 
 
       template <typename Element>
-      class BaseAtomicQueue : BaseQueue<Element>
+      class BaseAtomicQueue
       {
         public:
           explicit BaseAtomicQueue() = default;
 
           ~BaseAtomicQueue() = default;
 
-          using BaseQueueStatus = typename BaseQueue<Element>::BaseQueueStatus;
-
           class BaseAtomicQueueStatus 
           {
             public:
               enum Status
               {
-                ELEMENT_PUSHED_SUCCESSFULLY = BaseQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY,
+                ELEMENT_PUSHED_SUCCESSFULLY = 1,
                 ELEMENT_POPED_SUCCESSFULLY,
                 CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE,
                 OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY
               };
+
+              template <typename T>
+              int forcePush(T&& t);
+
+              template <typename T>
+              int tryPush(T&& t, int maxSize);
+
+              //TODO: lock elements
+              virtual void front(Element& element) = 0;
+
+              virtual void back(Element& element) = 0;
+
+              virtual void pop(Element& element) = 0;
+
+              virtual bool isEmpty() = 0;
+
+              virtual int getSizeOfQueue() = 0;
           };
 
       };

@@ -37,10 +37,10 @@ namespace thunder {
               };
           };
 
-          template<typename T>
-          int push(T&& t);
+          template <typename T>
+          int forcePush(T&& t);
 
-          template<typename T>
+          template <typename T>
           int tryPush(T&& t, int maxSize);
           
           void front(Element& element) override;
@@ -59,6 +59,8 @@ namespace thunder {
           void push_atomic(T&& t, int head);
 
           void pop_atomic(Element& elem, int tail);
+
+          static const std::size_t kQueueSize = QueueSize;
 
 
           class CellStates 
@@ -88,6 +90,7 @@ namespace thunder {
               Node *next = nullptr;
           };
 
+          //TODO: align to cache line size
           std::atomic<int16_t> head_;
           std::atomic<int16_t> tail_; 
 

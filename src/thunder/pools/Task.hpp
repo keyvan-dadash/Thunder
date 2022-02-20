@@ -8,7 +8,7 @@ namespace thunder {
 
   namespace pools {
 
-    class Task 
+    class Task
     {
     public:
 
@@ -18,13 +18,13 @@ namespace thunder {
       Task(FuncType&& func) 
       // : Impl_(new Impl_type<FuncType>(std::move(func)))
       {
-        
+
       }
 
       Task(Task&& other) noexcept 
       // : Impl_(std::move(other.Impl_))
       {
-        
+
       }
 
       // Task* operator=(Task&& rhs) noexcept
