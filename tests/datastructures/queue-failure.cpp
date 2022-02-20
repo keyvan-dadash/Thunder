@@ -56,91 +56,25 @@ TEST(QueueFailureOperations, TryPushElementToQueue) {
     }
 }
 
-// TEST(QueueFailureOperations, GetFrontElementFromEmptyQueue) {
-//     {
-//         thunder::datastructures::Queue<int> queue;
-//         EXPECT_EQ(*queue.front(), 0);
-//     }
-//     {
-//         thunder::datastructures::Queue<char> queue;
-//         EXPECT_EQ(*queue.front(), 0);
-//     }
-//     {
-//         thunder::datastructures::Queue<float> queue;
-//         EXPECT_EQ(*queue.front(), (float)0);
-//     }
-//     {
-//         thunder::datastructures::Queue<std::string> queue;
-//         EXPECT_EQ(*queue.front(), "");
-//     }
-// }
-
-// TEST(QueueFailureOperations, PopElementFromQueue) {
-//     {
-//         thunder::datastructures::Queue<int> queue;
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
-//     }
-//     {
-//         thunder::datastructures::Queue<char> queue;
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
-//     }
-//     {
-//         thunder::datastructures::Queue<float> queue;
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
-//     }
-//     {
-//         thunder::datastructures::Queue<std::string> queue;
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
-//     }
-// }
-
-// TEST(QueueFailureOperations, GetFrontElementAndChangeShouldNotChangeOriginalValue) {
-//     {
-//         thunder::datastructures::Queue<int> queue;
-//         queue.push(5);
-
-//         auto isReadOnly = queue.front();
-//         *isReadOnly.get() = 6;
-//         EXPECT_EQ(*queue.front(), 5);
-
-//         isReadOnly = queue.front();
-//         isReadOnly.reset(new int(10));
-//         EXPECT_EQ(*queue.front(), 5);
-//     }
-//     {
-//         thunder::datastructures::Queue<char> queue;
-//         queue.push('c');
-        
-//         auto isReadOnly = queue.front();
-//         *isReadOnly.get() = 'A';
-//         EXPECT_EQ(*queue.front(), 'c');
-
-//         isReadOnly = queue.front();
-//         isReadOnly.reset(new char('T'));
-//         EXPECT_EQ(*queue.front(), 'c');
-//     }
-//     {
-//         thunder::datastructures::Queue<float> queue;
-//         queue.push((float)5.1);
-        
-//         auto isReadOnly = queue.front();
-//         *isReadOnly.get() = (float)5.3;
-//         EXPECT_EQ(*queue.front(), (float)5.1);
-
-//         isReadOnly = queue.front();
-//         isReadOnly.reset(new float(5.2));
-//         EXPECT_EQ(*queue.front(), (float)5.1);
-//     }
-//     {
-//         thunder::datastructures::Queue<std::string> queue;
-//         queue.push("foo");
-        
-//         auto isReadOnly = queue.front();
-//         *isReadOnly.get() = "too";
-//         EXPECT_EQ(*queue.front(), "foo");
-
-//         isReadOnly = queue.front();
-//         isReadOnly.reset(new std::string("zoo"));
-//         EXPECT_EQ(*queue.front(), "foo");
-//     }
-// }
+TEST(QueueFailureOperations, PopElementFromQueue) {
+    {
+        thunder::datastructures::Queue<int> queue;
+        int front;
+        EXPECT_EQ(queue.pop(front), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+    }
+    {
+        thunder::datastructures::Queue<char> queue;
+        char front;
+        EXPECT_EQ(queue.pop(front), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+    }
+    {
+        thunder::datastructures::Queue<float> queue;
+        float front;
+        EXPECT_EQ(queue.pop(front), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+    }
+    {
+        thunder::datastructures::Queue<std::string> queue;
+        std::string front;
+        EXPECT_EQ(queue.pop(front), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+    }
+}

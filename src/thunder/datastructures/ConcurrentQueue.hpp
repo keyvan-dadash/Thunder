@@ -6,7 +6,7 @@
 #include <utility>
 
 
-#include <thunder/datastructures/BaseAtomicQueue.hpp>
+#include <thunder/datastructures/BaseConcurrentQueue.hpp>
 
 
 namespace thunder {
@@ -16,21 +16,21 @@ namespace thunder {
 
 
       template <typename Element, std::size_t QueueSize = 128>
-      class AtomicQueue : BaseAtomicQueue<Element>
+      class ConcurrentQueue : BaseConcurrentQueue<Element>
       {
         public:
-          explicit AtomicQueue();
+          explicit ConcurrentQueue();
 
-          ~AtomicQueue();
+          ~ConcurrentQueue();
 
-          using BaseAtomicQueueStatus = typename BaseAtomicQueue<Element>::BaseAtomicQueueStatus;
+          using BaseConcurrentQueueStatus = typename BaseConcurrentQueue<Element>::BaseConcurrentQueueStatus;
 
-          class AtomicQueueStatus 
+          class ConcurrentQueueStatus 
           {
             public:
               enum Status
               {
-                ELEMENT_PUSHED_SUCCESSFULLY = BaseAtomicQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY,
+                ELEMENT_PUSHED_SUCCESSFULLY = BaseConcurrentQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY,
                 ELEMENT_POPED_SUCCESSFULLY,
                 CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE,
                 OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY
@@ -76,20 +76,6 @@ namespace thunder {
               };
           };
 
-          struct Node {
-            public:    
-              Element element = NULL;
-
-              template <typename T>
-              explicit Node(T&& t) : element(std::forward<T>(t)) {}
-
-              Node operator=(Node&& other) {
-                element(other.element);
-              }
-            
-              Node *next = nullptr;
-          };
-
           //TODO: align to cache line size
           std::atomic<int16_t> head_;
           std::atomic<int16_t> tail_; 
@@ -104,11 +90,11 @@ namespace thunder {
 
       };
 
-      using AtomicQueueOperationStatus = AtomicQueue<int>::AtomicQueueStatus::Status;
+      using ConcurrentQueueOperationStatus = ConcurrentQueue<int>::ConcurrentQueueStatus::Status;
 
   }
 }
 
 
 
-#include <thunder/datastructures/AtomicQueue.cpp>
+#include <thunder/datastructures/ConcurrentQueue.cpp>

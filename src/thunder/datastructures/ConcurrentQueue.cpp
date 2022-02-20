@@ -5,7 +5,7 @@
 #include <iostream>
 
 
-#include <thunder/datastructures/AtomicQueue.hpp>
+#include <thunder/datastructures/ConcurrentQueue.hpp>
 
 
 namespace thunder {
@@ -14,7 +14,7 @@ namespace thunder {
 
 
     template <typename Element, std::size_t QueueSize>
-    AtomicQueue<Element, QueueSize>::AtomicQueue()
+    ConcurrentQueue<Element, QueueSize>::ConcurrentQueue()
     {
       for (int i = 0; i < QueueSize; i++)
       {
@@ -26,14 +26,14 @@ namespace thunder {
 
 
     template <typename Element, std::size_t QueueSize>
-    AtomicQueue<Element, QueueSize>::~AtomicQueue()
+    ConcurrentQueue<Element, QueueSize>::~ConcurrentQueue()
     {
 
     }
 
     template <typename Element, std::size_t QueueSize>
     template<typename T> 
-    int AtomicQueue<Element, QueueSize>::forcePush(T&& t)
+    int ConcurrentQueue<Element, QueueSize>::forcePush(T&& t)
     {
       int16_t head = head_.fetch_add(1, std::memory_order_relaxed);
 
@@ -41,19 +41,19 @@ namespace thunder {
 
       size_.fetch_add(1, std::memory_order_release);
 
-      return BaseAtomicQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY;
+      return BaseConcurrentQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY;
     }
 
     template< typename Element, std::size_t QueueSize>
     template<typename T>
-    int AtomicQueue<Element, QueueSize>::tryPush(T&& t, int maxSize)
+    int ConcurrentQueue<Element, QueueSize>::tryPush(T&& t, int maxSize)
     {
       auto head = head_.load(std::memory_order_relaxed);
       do
       {
         if (size_.load(std::memory_order_acquire) >= kQueueSize)
         {
-          return BaseAtomicQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE;
+          return BaseConcurrentQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE;
         }
       } while (!head_.compare_exchange_strong(head, head + 1, std::memory_order_release));
 
@@ -61,13 +61,13 @@ namespace thunder {
 
       size_.fetch_add(1, std::memory_order_release);
 
-      return BaseAtomicQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY;
+      return BaseConcurrentQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY;
     }
 
     //TODO: think about front and back api's
     template <typename Element, std::size_t QueueSize>
     void 
-    AtomicQueue<Element, QueueSize>::front(Element& element)
+    ConcurrentQueue<Element, QueueSize>::front(Element& element)
     {
       if (size_.load(std::memory_order_relaxed) == 0) {
         return; 
@@ -86,7 +86,7 @@ namespace thunder {
 
     template <typename Element, std::size_t QueueSize>
     void
-    AtomicQueue<Element, QueueSize>::back(Element& element)
+    ConcurrentQueue<Element, QueueSize>::back(Element& element)
     {
       if (size_.load(std::memory_order_relaxed) == 0) {
         return; 
@@ -104,11 +104,11 @@ namespace thunder {
     }
 
     template <typename Element, std::size_t QueueSize>
-    int AtomicQueue<Element, QueueSize>::pop(Element& element)
+    int ConcurrentQueue<Element, QueueSize>::pop(Element& element)
     {
       if (size_ <= 0)
       {
-        return BaseAtomicQueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY;
+        return BaseConcurrentQueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY;
       }
 
       //TODO: how we gurantee this?
@@ -118,12 +118,12 @@ namespace thunder {
 
       size_.fetch_sub(1, std::memory_order_release);
 
-      return BaseAtomicQueueStatus::ELEMENT_POPED_SUCCESSFULLY;
+      return BaseConcurrentQueueStatus::ELEMENT_POPED_SUCCESSFULLY;
     }
 
     template <typename Element, std::size_t QueueSize>
     template<typename T>
-    void AtomicQueue<Element, QueueSize>::push_atomic(T&& t, int head)
+    void ConcurrentQueue<Element, QueueSize>::push_atomic(T&& t, int head)
     {
 
       std::atomic_int8_t& state = states_[head];
@@ -150,7 +150,7 @@ namespace thunder {
     }
 
     template <typename Element, std::size_t QueueSize>
-    void AtomicQueue<Element, QueueSize>::pop_atomic(Element& elem, int tail)
+    void ConcurrentQueue<Element, QueueSize>::pop_atomic(Element& elem, int tail)
     {
       
       std::atomic_int8_t& state = states_[tail];
@@ -180,15 +180,15 @@ namespace thunder {
     }
 
     template <typename Element, std::size_t QueueSize>
-    bool AtomicQueue<Element, QueueSize>::isEmpty()
+    bool ConcurrentQueue<Element, QueueSize>::isEmpty()
     {
-      return size_.load(std::memory_order_acquire) > 0 ? false : true;
+      return size_.load(std::memory_order_relaxed) > 0 ? false : true;
     }
 
     template <typename Element, std::size_t QueueSize>
-    int AtomicQueue<Element, QueueSize>::getSizeOfQueue()
+    int ConcurrentQueue<Element, QueueSize>::getSizeOfQueue()
     {
-      return size_.load(std::memory_order_acquire);
+      return size_.load(std::memory_order_relaxed);
     }
 
   }

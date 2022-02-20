@@ -19,7 +19,7 @@ namespace thunder {
         public:
           Queue() {}
 
-          ~Queue();
+          ~Queue() = default;
 
           Queue(Queue<Element>&& other) noexcept;
           Queue<Element>& operator=(Queue<Element>&& rhs) noexcept;
@@ -54,7 +54,8 @@ namespace thunder {
           int getSizeOfQueue() override;
 
         private:
-          struct Node {
+          struct Node
+          {
             public:    
               Element element = NULL;
 
@@ -69,7 +70,6 @@ namespace thunder {
           };
 
           std::unique_ptr<Node> head_ = nullptr;
-          std::unique_ptr<Node> tail_ = nullptr;
           size_t size_{0};
       };
 

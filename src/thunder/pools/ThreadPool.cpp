@@ -6,7 +6,7 @@
 #include <future>
 
 
-#include "thunder/datastructures/AtomicQueue.hpp"
+#include "thunder/datastructures/ConcurrentQueue.hpp"
 
 #include "ThreadPool.hpp"
 #include "Task.hpp"
