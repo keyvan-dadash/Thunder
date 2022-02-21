@@ -88,75 +88,77 @@ TEST(ConcurrentQueueFailureOperations, MultiThreadedQueueSizeCheck)
     }
 }
 
-// TEST(ConcurrentQueueFailureOperations, HugeMultiThreadedQueueSizeCheck)
-// {
-//     {
-//         thunder::datastructures::ConcurrentQueue<int> queue;
+TEST(ConcurrentQueueFailureOperations, HugeMultiThreadedQueueSizeCheck)
+{
+    static constexpr int kNumberOfCpus = 16;
+    static constexpr std::size_t kQueueSize = (std::size_t)(kNumberOfCpus * 1000);
+    {
+        thunder::datastructures::ConcurrentQueue<int, kQueueSize> queue;
 
-//         std::function<void(void)> operation = [&]() {
-//             for (int i = 0; i < 1000; i++) {
-//                 queue.forcePush(i);
-//             }
-//         };
+        std::function<void(void)> operation = [&]() {
+            for (int i = 0; i < 1000; i++) {
+                queue.forcePush(i);
+            }
+        };
 
-//         auto threads = createNumberOfThreadAndDoOperation(std::thread::hardware_concurrency(), operation);
+        auto threads = createNumberOfThreadAndDoOperation(kNumberOfCpus, operation);
         
-//         for (int i = 0; i < threads.size(); i++) {
-//             (*(threads.at(i))).join();
-//         }
+        for (int i = 0; i < threads.size(); i++) {
+            (*(threads.at(i))).join();
+        }
 
-//         EXPECT_EQ(queue.getSizeOfQueue(), (int)std::thread::hardware_concurrency() * 1000);
+        EXPECT_EQ(queue.getSizeOfQueue(), kQueueSize);
         
-//     }
-//     {
-//         thunder::datastructures::ConcurrentQueue<char> queue;
+    }
+    {
+        thunder::datastructures::ConcurrentQueue<char, kQueueSize> queue;
 
-//         std::function<void(void)> operation = [&]() {
-//             for (int i = 0; i < 1000; i++) {
-//                 queue.forcePush('t');
-//             }
-//         };
+        std::function<void(void)> operation = [&]() {
+            for (int i = 0; i < 1000; i++) {
+                queue.forcePush('t');
+            }
+        };
 
-//         auto threads = createNumberOfThreadAndDoOperation(std::thread::hardware_concurrency(), operation);
+        auto threads = createNumberOfThreadAndDoOperation(kNumberOfCpus, operation);
         
-//         for (int i = 0; i < threads.size(); i++) {
-//             (*(threads.at(i))).join();
-//         }
+        for (int i = 0; i < threads.size(); i++) {
+            (*(threads.at(i))).join();
+        }
 
-//         EXPECT_EQ(queue.getSizeOfQueue(), (int)std::thread::hardware_concurrency() * 1000);
-//     }
-//     {
-//         thunder::datastructures::ConcurrentQueue<float> queue;
+        EXPECT_EQ(queue.getSizeOfQueue(), kQueueSize);
+    }
+    {
+        thunder::datastructures::ConcurrentQueue<float, kQueueSize> queue;
 
-//         std::function<void(void)> operation = [&]() {
-//             for (int i = 0; i < 1000; i++) {
-//                 queue.forcePush((float)i * 1.4);
-//             }
-//         };
+        std::function<void(void)> operation = [&]() {
+            for (int i = 0; i < 1000; i++) {
+                queue.forcePush((float)i * 1.4);
+            }
+        };
 
-//         auto threads = createNumberOfThreadAndDoOperation(std::thread::hardware_concurrency(), operation);
+        auto threads = createNumberOfThreadAndDoOperation(kNumberOfCpus, operation);
         
-//         for (int i = 0; i < threads.size(); i++) {
-//             (*(threads.at(i))).join();
-//         }
+        for (int i = 0; i < threads.size(); i++) {
+            (*(threads.at(i))).join();
+        }
 
-//         EXPECT_EQ(queue.getSizeOfQueue(), (int)std::thread::hardware_concurrency() * 1000);
-//     }
-//     {
-//         thunder::datastructures::ConcurrentQueue<std::string> queue;
+        EXPECT_EQ(queue.getSizeOfQueue(), kQueueSize);
+    }
+    {
+        thunder::datastructures::ConcurrentQueue<std::string, kQueueSize> queue;
 
-//         std::function<void(void)> operation = [&]() {
-//             for (int i = 0; i < 1000; i++) {
-//                 queue.forcePush(std::string("test" + std::to_string(i)));
-//             }
-//         };
+        std::function<void(void)> operation = [&]() {
+            for (int i = 0; i < 1000; i++) {
+                queue.forcePush(std::string("test" + std::to_string(i)));
+            }
+        };
 
-//         auto threads = createNumberOfThreadAndDoOperation(std::thread::hardware_concurrency(), operation);
+        auto threads = createNumberOfThreadAndDoOperation(kNumberOfCpus, operation);
         
-//         for (int i = 0; i < threads.size(); i++) {
-//             (*(threads.at(i))).join();
-//         }
+        for (int i = 0; i < threads.size(); i++) {
+            (*(threads.at(i))).join();
+        }
 
-//         EXPECT_EQ(queue.getSizeOfQueue(), (int)std::thread::hardware_concurrency() * 1000);
-//     }
-// }
+        EXPECT_EQ(queue.getSizeOfQueue(), kQueueSize);
+    }
+}

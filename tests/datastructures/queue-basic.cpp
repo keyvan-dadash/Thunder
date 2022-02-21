@@ -160,7 +160,7 @@ TEST(QueueBasicOperations, PopElementFromQueueAndCheckFront) {
         queue.push(9);
 
         int front;
-        queue.front(front);
+        queue.pop(front);
         EXPECT_EQ(front, 5);
         queue.pop(front);
         EXPECT_EQ(front, 6);
@@ -181,6 +181,7 @@ TEST(QueueBasicOperations, PopElementFromQueueAndCheckFront) {
         queue.push('f');
 
         char front;
+        queue.pop(front);
         EXPECT_EQ(front, 'a');
         queue.pop(front);
         EXPECT_EQ(front, 'b');
@@ -203,6 +204,7 @@ TEST(QueueBasicOperations, PopElementFromQueueAndCheckFront) {
         queue.push(5.6);
 
         float front;
+        queue.pop(front);
         EXPECT_EQ(front, (float)5.1);
         queue.pop(front);
         EXPECT_EQ(front, (float)5.2);
@@ -225,6 +227,7 @@ TEST(QueueBasicOperations, PopElementFromQueueAndCheckFront) {
         queue.push("test6");
 
         std::string front;
+        queue.pop(front);
         EXPECT_EQ(front, "test1");
         queue.pop(front);
         EXPECT_EQ(front, "test2");

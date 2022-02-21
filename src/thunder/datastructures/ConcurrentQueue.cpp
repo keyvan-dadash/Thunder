@@ -37,7 +37,7 @@ namespace thunder {
     {
       int16_t head = head_.fetch_add(1, std::memory_order_relaxed);
 
-      push_atomic(std::forward<T>(t), head);
+      push_atomic(std::forward<T>(t), head % kQueueSize);
 
       size_.fetch_add(1, std::memory_order_release);
 
@@ -57,7 +57,7 @@ namespace thunder {
         }
       } while (!head_.compare_exchange_strong(head, head + 1, std::memory_order_release));
 
-      push_atomic(std::forward<T>(t), head);
+      push_atomic(std::forward<T>(t), head % kQueueSize);
 
       size_.fetch_add(1, std::memory_order_release);
 
@@ -114,7 +114,7 @@ namespace thunder {
       //TODO: how we gurantee this?
       auto tail = tail_.fetch_add(1, std::memory_order_relaxed);
 
-      pop_atomic(element, tail);
+      pop_atomic(element, tail % kQueueSize);
 
       size_.fetch_sub(1, std::memory_order_release);
 
