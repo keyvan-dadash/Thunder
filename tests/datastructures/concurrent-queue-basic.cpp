@@ -64,20 +64,20 @@ TEST(ConcurrentQueueBasicOperations, PushElementToQueue) {
 TEST(ConcurrentQueueBasicOperations, TryPushElementToQueue) {
     {
         thunder::datastructures::ConcurrentQueue<int> queue;
-        EXPECT_EQ(queue.tryPush(5, 10), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+        EXPECT_EQ(queue.tryPush(5), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
     }
     {
         thunder::datastructures::ConcurrentQueue<char> queue;
-        EXPECT_EQ(queue.tryPush('c', 10), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+        EXPECT_EQ(queue.tryPush('c'), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
     }
     {
         thunder::datastructures::ConcurrentQueue<float> queue;
-        EXPECT_EQ(queue.tryPush(5.1, 10), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+        EXPECT_EQ(queue.tryPush(5.1), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
     }
     {
         thunder::datastructures::ConcurrentQueue<std::string> queue;
-        EXPECT_EQ(queue.tryPush("foo", 10), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-        EXPECT_EQ(queue.tryPush(std::string("bar"), 10), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+        EXPECT_EQ(queue.tryPush("foo"), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+        EXPECT_EQ(queue.tryPush(std::string("bar")), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
     }
 }
 

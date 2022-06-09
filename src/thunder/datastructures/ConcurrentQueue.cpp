@@ -1,17 +1,13 @@
-
 #pragma once
 
 #include <atomic>
 #include <iostream>
 
-
 #include <thunder/datastructures/ConcurrentQueue.hpp>
-
 
 namespace thunder {
 
   namespace datastructures {
-
 
     template <typename Element, std::size_t QueueSize>
     ConcurrentQueue<Element, QueueSize>::ConcurrentQueue()
@@ -46,7 +42,7 @@ namespace thunder {
 
     template< typename Element, std::size_t QueueSize>
     template<typename T>
-    int ConcurrentQueue<Element, QueueSize>::tryPush(T&& t, int maxSize)
+    int ConcurrentQueue<Element, QueueSize>::tryPush(T&& t)
     {
       auto head = head_.load(std::memory_order_relaxed);
       do
@@ -62,45 +58,6 @@ namespace thunder {
       size_.fetch_add(1, std::memory_order_release);
 
       return BaseConcurrentQueueStatus::ELEMENT_PUSHED_SUCCESSFULLY;
-    }
-
-    //TODO: think about front and back api's
-    template <typename Element, std::size_t QueueSize>
-    void 
-    ConcurrentQueue<Element, QueueSize>::front(Element& element)
-    {
-      if (size_.load(std::memory_order_relaxed) == 0) {
-        return; 
-      }
-
-      auto tail = tail_.load(std::memory_order_relaxed);
-
-      while (true)
-      {
-        // element = elementArray_[tail];
-        if (tail == tail_.load(std::memory_order_relaxed)) break;
-        tail = tail_.load(std::memory_order_relaxed);
-        if (size_.load(std::memory_order_relaxed) <= 0) break;
-      }
-    }
-
-    template <typename Element, std::size_t QueueSize>
-    void
-    ConcurrentQueue<Element, QueueSize>::back(Element& element)
-    {
-      if (size_.load(std::memory_order_relaxed) == 0) {
-        return; 
-      }
-
-      auto head = head_.load(std::memory_order_relaxed);
-
-      while (true)
-      {
-        // element = elementArray_[head];
-        if (head == head_.load(std::memory_order_relaxed)) break;
-        head = head_.load(std::memory_order_relaxed);
-        if (size_.load(std::memory_order_relaxed) <= 0) break;
-      }
     }
 
     template <typename Element, std::size_t QueueSize>
@@ -125,7 +82,6 @@ namespace thunder {
     template<typename T>
     void ConcurrentQueue<Element, QueueSize>::push_atomic(T&& t, int head)
     {
-
       std::atomic_int8_t& state = states_[head];
 
       while (true)
@@ -151,8 +107,7 @@ namespace thunder {
 
     template <typename Element, std::size_t QueueSize>
     void ConcurrentQueue<Element, QueueSize>::pop_atomic(Element& elem, int tail)
-    {
-      
+    { 
       std::atomic_int8_t& state = states_[tail];
 
       while (true)
@@ -190,6 +145,5 @@ namespace thunder {
     {
       return size_.load(std::memory_order_relaxed);
     }
-
   }
 }

@@ -34,12 +34,7 @@ namespace thunder {
           int forcePush(T&& t);
 
           template <typename T>
-          int tryPush(T&& t, int maxSize);
-
-          //TODO: lock elements
-          virtual void front(Element& element) = 0;
-
-          virtual void back(Element& element) = 0;
+          int tryPush(T&& t);
 
           virtual int pop(Element& element) = 0;
 

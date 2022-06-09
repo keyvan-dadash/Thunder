@@ -1,19 +1,14 @@
-
 #pragma once
 
 #include <atomic>
 #include <memory>
 #include <utility>
 
-
 #include <thunder/datastructures/BaseConcurrentQueue.hpp>
-
 
 namespace thunder {
 
   namespace datastructures {
-
-
 
       template <typename Element, std::size_t QueueSize = 128>
       class ConcurrentQueue : BaseConcurrentQueue<Element>
@@ -41,12 +36,8 @@ namespace thunder {
           int forcePush(T&& t);
 
           template <typename T>
-          int tryPush(T&& t, int maxSize);
+          int tryPush(T&& t);
           
-          void front(Element& element) override;
-
-          void back(Element& element) override;
-
           int pop(Element& element) override;
 
           bool isEmpty() override;
