@@ -12,8 +12,8 @@ namespace thunder
   {
 
     template<typename Element,
-              std::size_t QueueSize = 128,
-              typename template <typename _Tp, std::size_t _QueueSize> ChannelBackend>
+              std::size_t QueueSize,
+              template <typename _Tp, std::size_t _QueueSize> typename ChannelBackend>
     class Channel
     {
 
@@ -35,6 +35,6 @@ namespace thunder
 
         static_assert(std::is_base_of_v<BaseConcurrentQueue<Element>, 
           ChannelBackend<Element, QueueSize>>, "ChannelBackend should inherith from BaseConcurrentQueue");
-    }
+    };
   }
 }

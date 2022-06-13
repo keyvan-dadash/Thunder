@@ -11,17 +11,17 @@ namespace thunder
   namespace datastructures 
   {
 
-    template<typename Element, std::size_t QueueSize, typename template <typename _Tp, std::size_t _QueueSize> ChannelBackend>
-    Element Channel<Elemenet, QueueSize, ChannelBackend>::recvElement()
+    template<typename Element, std::size_t QueueSize, template <typename _Tp, std::size_t _QueueSize> typename ChannelBackend>
+    Element Channel<Element, QueueSize, ChannelBackend>::recvElement()
     {
       Element elem;
       channel_backend_.pop(elem);
       return elem;
     }
 
-    template<typename Element, std::size_t QueueSize, typename template <typename _Tp, std::size_t _QueueSize> ChannelBackend>
+    template<typename Element, std::size_t QueueSize, template <typename _Tp, std::size_t _QueueSize> typename ChannelBackend>
     template<typename T>
-    void Channel<Elemenet, QueueSize, ChannelBackend>::sendElement(T&& t)
+    void Channel<Element, QueueSize, ChannelBackend>::sendElement(T&& t)
     {
       //TODO: we should block or maybe design api's
       channel_backend_.tryPush(std::forward<T>(t), kQueueSize);

@@ -1,22 +1,17 @@
-
+#pragma once
 
 #include <atomic>
 #include <functional>
 #include <semaphore>
 #include <iostream>
 
-
 namespace thunder {
-
 
   namespace synchronization {
 
     template <bool MayBlock = true, template <typename> class Atom = std::atomic>
     class AbstractBaton
     {
-      public:
-
-
       protected:
         int number_of_reader_= 0;
         int number_of_writer_= 0;
@@ -199,8 +194,5 @@ namespace thunder {
             }
         }
     };
-
-
-
-    }
+  }
 }

@@ -1,10 +1,12 @@
 #include <atomic>
+#include <bit>
 #include <cstdint>
 #include <mutex>
 #include <condition_variable>
 #include <thread>
 
 #include <thunder/synchronization/SmartLock.hpp>
+#include <thunder/utils/bit.hpp>
 
 namespace thunder {
 
@@ -12,7 +14,8 @@ namespace thunder {
 
     void SmartLock::lock()
     {
-      if (state.compare_exchange_weak(0, kIsLockedBit, std::memory_order_release, std::memory_order_relaxed))
+      uintptr_t clear = kClear;
+      if (state.compare_exchange_weak(clear, kIsLockedBit, std::memory_order_release, std::memory_order_relaxed))
       {
         return;
       }
@@ -22,7 +25,8 @@ namespace thunder {
 
     void SmartLock::unlock()
     {
-      if (state.compare_exchange_weak(kIsLockedBit, 0, std::memory_order_release, std::memory_order_relaxed))
+      uintptr_t locked = kIsLockedBit;
+      if (state.compare_exchange_weak(locked, kClear, std::memory_order_release, std::memory_order_relaxed))
       {
         return;
       }
@@ -46,7 +50,8 @@ namespace thunder {
 
         if (!(value & kIsLockedBit))
         {
-          if (state.compare_exchange_weak(0, value | kIsLockedBit, std::memory_order_release, std::memory_order_relaxed))
+          uintptr_t clear = kClear;
+          if (state.compare_exchange_weak(clear, value | kIsLockedBit, std::memory_order_release, std::memory_order_relaxed))
           {
             return;
           }
@@ -73,8 +78,7 @@ namespace thunder {
 
         thisThreadData.shouldPark = true;
 
-        //TODO: find way to get queueHead
-        ThreadData* queueHead;
+        ThreadData* queueHead = thunder::utils::bit_cast<ThreadData*>(value & ~kQueueHeadMask);
         if (queueHead)
         {
           queueHead->tail->next = &thisThreadData;
@@ -89,7 +93,7 @@ namespace thunder {
           queueHead->tail = &thisThreadData;
 
           value = state.load(std::memory_order_acquire);
-          //TODO: value bitwise cast with queue
+          value |= thunder::utils::bit_cast<uintptr_t>(queueHead);
           value &= ~kIsQueueLocked;
           state.store(value, std::memory_order_release);
         }
@@ -127,19 +131,25 @@ namespace thunder {
           break;
       }
 
-      value = state.load(std::memory_order_acquire);
+      uintptr_t value = state.load(std::memory_order_acquire);
 
-      //TODO: get queue head
-      ThreadData* queueHead;
+      ThreadData* queueHead = thunder::utils::bit_cast<ThreadData*>(value & ~kQueueHeadMask);
 
       ThreadData* nextHead = queueHead->next;
 
-      nextHead->tail = queueHead->tail;
+      if (nextHead)
+        nextHead->tail = queueHead->tail;
 
       queueHead->next = nullptr;
       queueHead->tail = nullptr;
 
-      // TODO: change head to nextHead and clear locks
+      value = state.load(std::memory_order_acquire);
+      value &= ~kIsLockedBit;
+      value &= ~kIsQueueLocked;
+      value &= kQueueHeadMask;
+      value |= thunder::utils::bit_cast<uintptr_t>(queueHead);
+      state.store(value, std::memory_order_release);
+      
       {
         std::scoped_lock<std::mutex> lock(queueHead->parkingLock);
 

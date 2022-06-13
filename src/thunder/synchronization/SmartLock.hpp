@@ -30,6 +30,7 @@ namespace thunder {
 
       protected:
 
+        static constexpr uintptr_t kClear = 0;
         static constexpr uintptr_t kIsLockedBit = 1;
         static constexpr uintptr_t kIsQueueLocked = 2;
         static constexpr uintptr_t kQueueHeadMask = 3;
