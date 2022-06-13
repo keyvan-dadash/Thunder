@@ -2,6 +2,9 @@
 
 #include <atomic>
 #include <cstdint>
+#include <condition_variable>
+#include <mutex>
+#include <type_traits>
 
 #include <thunder/synchronization/AbstractMutex.hpp>
 
@@ -10,19 +13,20 @@ namespace thunder {
   namespace synchronization {
 
     // smae as WordLock in Webkit(WTF)
-    class SmartMutex : public AbstractMutex
+
+    class SmartLock
     {
       public:
 
-        explicit SmartMutex() = default;
+        explicit SmartLock() = default;
 
-        ~SmartMutex() = default;
+        ~SmartLock() = default;
 
-        void lock() override;
+        void lock();
 
-        void unlock() override;
+        void unlock();
 
-        void isLocked() override;
+        bool isLocked();
 
       protected:
 
@@ -35,7 +39,18 @@ namespace thunder {
 
         void unlockSlow();
 
-        std::atomic_uintptr_t ptr;
+        std::atomic_uintptr_t state;
+
+      private:
+
+        struct ThreadData
+        {
+          bool shouldPark { false };
+          std::mutex parkingLock;
+          std::condition_variable parkingCondition;
+          ThreadData* next { nullptr };
+          ThreadData* tail { nullptr };
+        };
     };
   };
 }
