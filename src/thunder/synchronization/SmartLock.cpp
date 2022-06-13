@@ -104,7 +104,49 @@ namespace thunder {
 
     void SmartLock::unlockSlow()
     {
+      while (true)
+      {
+        uintptr_t value = state.load(std::memory_order_acquire);
 
+        if (value == kIsLockedBit)
+        {
+          if (state.compare_exchange_weak(value, 0, std::memory_order_release, std::memory_order_relaxed))
+            return;
+
+          std::this_thread::yield();
+          continue;
+        }
+
+        if (value & kIsQueueLocked)
+        {
+          std::this_thread::yield();
+          continue;
+        }
+
+        if (state.compare_exchange_weak(value, value | kIsQueueLocked, std::memory_order_release, std::memory_order_relaxed))
+          break;
+      }
+
+      value = state.load(std::memory_order_acquire);
+
+      //TODO: get queue head
+      ThreadData* queueHead;
+
+      ThreadData* nextHead = queueHead->next;
+
+      nextHead->tail = queueHead->tail;
+
+      queueHead->next = nullptr;
+      queueHead->tail = nullptr;
+
+      // TODO: change head to nextHead and clear locks
+      {
+        std::scoped_lock<std::mutex> lock(queueHead->parkingLock);
+
+        queueHead->shouldPark = false;
+
+        queueHead->parkingCondition.notify_one();
+      }
     }
   };
 }
