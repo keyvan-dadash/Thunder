@@ -1,6 +1,3 @@
-
-
-
 #include <thread>
 #include <chrono>
 
