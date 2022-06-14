@@ -2,8 +2,8 @@
 
 #include <atomic>
 #include <new>
-
-
+#include <cstddef>
+#include <thread>
 
 namespace thunder {
 
@@ -20,83 +20,66 @@ namespace thunder {
         constexpr std::size_t hardware_destructive_interference_size
             = 2 * sizeof(std::max_align_t);
     #endif
-    
-    class SpinLock {
+
+    template <bool FitIntCacheline>
+    class BaseSpinLockClass
+    {
+      protected:
+        std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
+    };
+
+    template <>
+    class BaseSpinLockClass<true>
+    {
+      protected:
+        std::atomic_flag lock_ = ATOMIC_FLAG_INIT;
+        char padding[hardware_destructive_interference_size - sizeof(lock_)];
+    };
+
+
+    template <bool FitIntCacheline>
+    class BaseSpinLock : public BaseSpinLockClass<FitIntCacheline> {
 
       public:
 
-        SpinLock()
+        BaseSpinLock()
         {
-            this->init();
         }
 
-        ~SpinLock()
+        ~BaseSpinLock()
         {
 
         }
-
 
         void lock() noexcept
         {
-            while(lock_.test_and_set(std::memory_order_acq_rel))
-                                                                ;
+            while(this->lock_.test_and_set(std::memory_order_acquire)) {
+              while (this->lock_.test(std::memory_order_relaxed))
+                                  std::this_thread::yield();
+            }
         }
 
         void unlock() noexcept
         {
-            lock_.clear(std::memory_order_release);
+            this->lock_.clear(std::memory_order_release);
         }
 
         bool try_lock() noexcept
         {
-            return !lock_.test_and_set(std::memory_order_acq_rel);
+            return !this->lock_.test_and_set(std::memory_order_acq_rel);
         }
 
         void clear() noexcept
         {
-          lock_.clear();
+          this->lock_.clear(std::memory_order_release);
         }
-
-      private:
-
-        void init()
-        {
-            lock_.clear();
-        }
-
-
-        std::atomic_flag lock_;
-
-
     };
 
-
-
-    class CacheLineSpinLock {
-
-      public:
-        CacheLineSpinLock()
-        {
-            this->spinlock_.reset(new SpinLock());
-        }
-
-        void lock() noexcept { spinlock_.get()->lock(); }
-        void unlock() noexcept { spinlock_.get()->unlock(); }
-        bool try_lock() noexcept { return spinlock_.get()->try_lock(); }
-
-      private:
-        std::unique_ptr<SpinLock> spinlock_ = nullptr;
-
-        char padding[hardware_destructive_interference_size - sizeof(spinlock_)];
-
-    };
-
+    using SpinLock = BaseSpinLock<false>;
+    using CacheLineSpinLock = BaseSpinLock<true>;
     static_assert(
-        sizeof(CacheLineSpinLock) == hardware_destructive_interference_size,
-         "CacheLine Spinlock not in size cacheline");
-
-
-
-
-  }
+      sizeof(CacheLineSpinLock) == hardware_destructive_interference_size,
+      "CacheLine Spinlock not in size cacheline");
+ }
 }
+
