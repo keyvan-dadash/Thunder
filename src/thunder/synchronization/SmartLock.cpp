@@ -43,7 +43,8 @@ namespace thunder {
     void SmartLock::lockSlow()
     {
       unsigned spinLockCnt = 0;
-
+      ThreadData thisThreadData;
+      bool isThisThreadWasHead = false;
 
       while (true)
       {
@@ -57,14 +58,12 @@ namespace thunder {
           }
         }
 
-        if (!(value & ~kQueueHeadMask) && spinLockCnt < kSpinLockCnt)
+        if ((isThisThreadWasHead && spinLockCnt < kSpinLockCnt) || (!(value & ~kQueueHeadMask) && spinLockCnt < kSpinLockCnt))
         {
           spinLockCnt++;
           std::this_thread::yield();
           continue;
         }
-
-        ThreadData thisThreadData;
 
         value = state.load(std::memory_order_acquire);
 
@@ -77,6 +76,7 @@ namespace thunder {
         }
 
         thisThreadData.shouldPark = true;
+        isThisThreadWasHead = false;
 
         ThreadData* queueHead = thunder::utils::bit_cast<ThreadData*>(value & ~kQueueHeadMask);
         if (queueHead)
@@ -102,6 +102,9 @@ namespace thunder {
           std::unique_lock<std::mutex> lock(thisThreadData.parkingLock);
 
           thisThreadData.parkingCondition.wait(lock, [&](){ return !thisThreadData.shouldPark; });
+
+          spinLockCnt = -kSpinLockCnt;
+          isThisThreadWasHead = true;
         }
       }
     }
