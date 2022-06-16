@@ -111,9 +111,10 @@ namespace thunder {
 
     void SmartLock::unlockSlow()
     {
+      uintptr_t value;
       while (true)
       {
-        uintptr_t value = state.load(std::memory_order_acquire);
+        value = state.load(std::memory_order_acquire);
 
         if (value == kIsLockedBit)
         {
@@ -134,7 +135,7 @@ namespace thunder {
           break;
       }
 
-      uintptr_t value = state.load(std::memory_order_release);
+      value = state.load(std::memory_order_release);
 
       ThreadData* queueHead = thunder::utils::bit_cast<ThreadData*>(value & ~kQueueHeadMask);
 
