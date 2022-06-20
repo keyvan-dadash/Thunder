@@ -3,12 +3,25 @@
 #include <atomic>
 #include <memory>
 #include <utility>
+#include <cstddef>
 
 #include <thunder/datastructures/BaseConcurrentQueue.hpp>
 
 namespace thunder {
 
   namespace datastructures {
+
+    #ifdef __cpp_lib_hardware_interference_size
+        using std::hardware_constructive_interference_size;
+        using std::hardware_destructive_interference_size;
+    #else
+        // 64 bytes on x86-64 │ L1_CACHE_BYTES │ L1_CACHE_SHIFT │ __cacheline_aligned │ ...
+        constexpr std::size_t hardware_constructive_interference_size
+            = 2 * sizeof(std::max_align_t);
+        constexpr std::size_t hardware_destructive_interference_size
+            = 2 * sizeof(std::max_align_t);
+    #endif
+
 
       template <typename Element, std::size_t QueueSize = 128>
       class ConcurrentQueue : BaseConcurrentQueue<Element>
@@ -67,9 +80,8 @@ namespace thunder {
               };
           };
 
-          //TODO: align to cache line size
-          std::atomic<int16_t> head_;
-          std::atomic<int16_t> tail_; 
+          alignas(hardware_destructive_interference_size) std::atomic<int16_t> head_;
+          alignas(hardware_destructive_interference_size) std::atomic<int16_t> tail_; 
 
           typedef typename std::aligned_storage_t<sizeof(Element), alignof(Element)> ElementStorage;
 
@@ -78,14 +90,11 @@ namespace thunder {
           std::atomic_int8_t states_[QueueSize];
 
           std::atomic<size_t> size_{0};
-
       };
 
       using ConcurrentQueueOperationStatus = ConcurrentQueue<int>::ConcurrentQueueStatus::Status;
-
   }
 }
 
-
-
 #include <thunder/datastructures/ConcurrentQueue.cpp>
+

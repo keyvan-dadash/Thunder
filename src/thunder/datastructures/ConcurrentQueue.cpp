@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <iostream>
+#include <emmintrin.h>
 
 #include <thunder/datastructures/ConcurrentQueue.hpp>
 
@@ -31,7 +32,7 @@ namespace thunder {
     template<typename T> 
     int ConcurrentQueue<Element, QueueSize>::forcePush(T&& t)
     {
-      int16_t head = head_.fetch_add(1, std::memory_order_relaxed);
+      auto head = head_.fetch_add(1, std::memory_order_relaxed);
 
       push_atomic(std::forward<T>(t), head % kQueueSize);
 
@@ -100,7 +101,9 @@ namespace thunder {
         }
         else
         {
-          //TODO: some hybrid mutexs
+          do
+            _mm_pause();
+          while(state.load(std::memory_order_acquire) != CellStates::EMPTY);
         }
       }
     }
@@ -129,7 +132,9 @@ namespace thunder {
           return;
         }
         else {
-          //TODO: some hybrid mutexs
+           do
+            _mm_pause();
+          while(state.load(std::memory_order_acquire) != CellStates::EMPTY);
         }
       }
     }
