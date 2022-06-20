@@ -6,3 +6,4 @@ add_subdirectory(smartlock)
 
 add_subdirectory(spinlock)
 
+add_subdirectory(queues)

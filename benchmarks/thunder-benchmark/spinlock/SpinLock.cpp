@@ -1,13 +1,8 @@
-
-
 #include <thread>
-
 
 #include <benchmark/benchmark.h>
 
 #include <thunder/synchronization/SpinLock.hpp>
-
-
 
 static void BE_SpinLock(benchmark::State& state) {
     // state.PauseTiming();

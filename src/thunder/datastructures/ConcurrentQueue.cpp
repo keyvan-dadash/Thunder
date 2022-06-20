@@ -134,7 +134,7 @@ namespace thunder {
         else {
            do
             _mm_pause();
-          while(state.load(std::memory_order_acquire) != CellStates::EMPTY);
+          while(state.load(std::memory_order_acquire) != CellStates::STORED);
         }
       }
     }
