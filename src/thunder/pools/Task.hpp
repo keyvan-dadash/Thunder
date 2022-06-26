@@ -15,14 +15,12 @@ namespace thunder {
       Task() = default;
 
       template<typename FuncType>
-      Task(FuncType&& func) 
-      // : Impl_(new Impl_type<FuncType>(std::move(func)))
+      Task(FuncType&& func) : Impl_(new Impl_type<FuncType>(std::move(func)))
       {
 
       }
 
-      Task(Task&& other) noexcept 
-      // : Impl_(std::move(other.Impl_))
+      Task(Task&& other) noexcept : Impl_(std::move(other.Impl_))
       {
 
       }
@@ -38,7 +36,7 @@ namespace thunder {
 
       void operator()()
       {
-        this->Impl_->run();
+        Impl_->run();
       }
 
 
@@ -53,8 +51,7 @@ namespace thunder {
       struct Impl_type : Impl_base {
         Func func;
 
-        Impl_type(Func&& func) 
-        // : func(std::move(func))
+        Impl_type(Func&& func) : func(std::move(func))
          {}
 
         void run()
@@ -65,6 +62,5 @@ namespace thunder {
 
       std::unique_ptr<Impl_base> Impl_;
     };
-
   };
 }
