@@ -2,14 +2,15 @@
 
 // #include <string>
 
-
 // #include <gtest/gtest.h>
 
 // #include <thunder/datastructures/ConcurrentMap.hpp>
 
 // TEST(MapBasicOperations, CreateMap) {
-//     //we should test this way with lambda expression bcs we got error when using normal mode EXPECT_NO_THROW
-//     //see https://stackoverflow.com/questions/41681243/compilation-error-using-googletests-expect-no-throw-with-stdarray
+//     //we should test this way with lambda expression bcs we got error when
+//     using normal mode EXPECT_NO_THROW
+//     //see
+//     https://stackoverflow.com/questions/41681243/compilation-error-using-googletests-expect-no-throw-with-stdarray
 //     EXPECT_NO_THROW((
 //         []{thunder::datastructures::ConcurrentMap<int, int> map;}()
 //     ));
@@ -20,7 +21,8 @@
 //         []{thunder::datastructures::ConcurrentMap<float, float> map;}()
 //     ));
 //     EXPECT_NO_THROW((
-//         []{thunder::datastructures::ConcurrentMap<std::string, std::string> map;}()
+//         []{thunder::datastructures::ConcurrentMap<std::string, std::string>
+//         map;}()
 //     ));
 // }
 
@@ -123,40 +125,50 @@
 // // TEST(QueueBasicOperations, PushElementToQueue) {
 // //     {
 // //         thunder::datastructures::Queue<int> queue;
-// //         EXPECT_EQ(queue.push(5), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.push(5),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<char> queue;
-// //         EXPECT_EQ(queue.push('c'), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.push('c'),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<float> queue;
-// //         EXPECT_EQ(queue.push(5.1), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.push(5.1),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<std::string> queue;
-// //         EXPECT_EQ(queue.push("foo"), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-// //         EXPECT_EQ(queue.push(std::string("bar")), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.push("foo"),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.push(std::string("bar")),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
 // //     }
 // // }
 
 // // TEST(QueueBasicOperations, TryPushElementToQueue) {
 // //     {
 // //         thunder::datastructures::Queue<int> queue;
-// //         EXPECT_EQ(queue.tryPush(5, 10), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.tryPush(5, 10),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<char> queue;
-// //         EXPECT_EQ(queue.tryPush('c', 10), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.tryPush('c', 10),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<float> queue;
-// //         EXPECT_EQ(queue.tryPush(5.1, 10), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.tryPush(5.1, 10),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<std::string> queue;
-// //         EXPECT_EQ(queue.tryPush("foo", 10), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-// //         EXPECT_EQ(queue.tryPush(std::string("bar"), 10), thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.tryPush("foo", 10),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.tryPush(std::string("bar"), 10),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
 // //     }
 // // }
 
@@ -189,28 +201,33 @@
 // //     {
 // //         thunder::datastructures::Queue<int> queue;
 // //         queue.push(5);
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 // //         EXPECT_EQ(queue.isEmpty(), true);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<char> queue;
 // //         queue.push('c');
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 // //         EXPECT_EQ(queue.isEmpty(), true);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<float> queue;
 // //         queue.push(5.1);
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 // //         EXPECT_EQ(queue.isEmpty(), true);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<std::string> queue;
 // //         queue.push("foo");
 // //         queue.push(std::string("bar"));
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 // //         EXPECT_EQ(queue.isEmpty(), false);
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 // //         EXPECT_EQ(queue.isEmpty(), true);
 // //     }
 // // }
@@ -305,31 +322,38 @@
 // //         queue.push(5);
 
 // //         thunder::datastructures::Queue<int> secondQueue(std::move(queue));
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
 // //         EXPECT_EQ(*secondQueue.front(), 5);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<char> queue;
 // //         queue.push('c');
 
-// //         thunder::datastructures::Queue<char> secondQueue(std::move(queue));
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+// //         thunder::datastructures::Queue<char>
+// secondQueue(std::move(queue));
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
 // //         EXPECT_EQ(*secondQueue.front(), 'c');
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<float> queue;
 // //         queue.push(5.1);
-        
-// //         thunder::datastructures::Queue<float> secondQueue(std::move(queue));
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+
+// //         thunder::datastructures::Queue<float>
+// secondQueue(std::move(queue));
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
 // //         EXPECT_EQ(*secondQueue.front(), (float)5.1);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<std::string> queue;
 // //         queue.push("foo");
-        
-// //         thunder::datastructures::Queue<std::string> secondQueue(std::move(queue));
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+
+// //         thunder::datastructures::Queue<std::string>
+// secondQueue(std::move(queue));
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
 // //         EXPECT_EQ(*secondQueue.front(), "foo");
 // //     }
 // // }
@@ -339,32 +363,40 @@
 // //         thunder::datastructures::Queue<int> queue;
 // //         queue.push(5);
 
-// //         thunder::datastructures::Queue<int> secondQueue = std::move(queue);
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+// //         thunder::datastructures::Queue<int> secondQueue =
+// std::move(queue);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
 // //         EXPECT_EQ(*secondQueue.front(), 5);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<char> queue;
 // //         queue.push('c');
 
-// //         thunder::datastructures::Queue<char> secondQueue = std::move(queue);
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+// //         thunder::datastructures::Queue<char> secondQueue =
+// std::move(queue);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
 // //         EXPECT_EQ(*secondQueue.front(), 'c');
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<float> queue;
 // //         queue.push(5.1);
-        
-// //         thunder::datastructures::Queue<float> secondQueue = std::move(queue);
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+
+// //         thunder::datastructures::Queue<float> secondQueue =
+// std::move(queue);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
 // //         EXPECT_EQ(*secondQueue.front(), (float)5.1);
 // //     }
 // //     {
 // //         thunder::datastructures::Queue<std::string> queue;
 // //         queue.push("foo");
-        
-// //         thunder::datastructures::Queue<std::string> secondQueue = std::move(queue);
-// //         EXPECT_EQ(queue.pop(), thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
+
+// //         thunder::datastructures::Queue<std::string> secondQueue =
+// std::move(queue);
+// //         EXPECT_EQ(queue.pop(),
+// thunder::datastructures::QueueOperationStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY);
 // //         EXPECT_EQ(*secondQueue.front(), "foo");
 // //     }
 // // }

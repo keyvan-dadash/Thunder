@@ -1,40 +1,35 @@
 
 #pragma once
 
-#include <type_traits>
-
 #include <thunder/datastructures/BaseConcurrentQueue.hpp>
 #include <thunder/datastructures/ConcurrentQueue.hpp>
+#include <type_traits>
 
-namespace thunder
-{
-  namespace datastructures 
-  {
+namespace thunder {
+namespace datastructures {
 
-    template<typename Element,
-              std::size_t QueueSize,
-              template <typename _Tp, std::size_t _QueueSize> typename ChannelBackend>
-    class Channel
-    {
+template <typename Element, std::size_t QueueSize,
+          template <typename _Tp, std::size_t _QueueSize>
+          typename ChannelBackend>
+class Channel {
+ public:
+  Channel();
 
-      public:
+  ~Channel() = default;
 
-        Channel();
+  Element recvElement();
 
-        ~Channel() = default;
+  template <typename T>
+  void sendElement(T&& t);
 
-        Element recvElement();
+ private:
+  static const std::size_t kQueueSize = QueueSize;
 
-        template<typename T>
-        void sendElement(T&& t);
+  ChannelBackend<Element, QueueSize> channel_backend_;
 
-      private:
-        static const std::size_t kQueueSize = QueueSize;
-
-        ChannelBackend<Element, QueueSize> channel_backend_;
-
-        static_assert(std::is_base_of_v<BaseConcurrentQueue<Element>, 
-          ChannelBackend<Element, QueueSize>>, "ChannelBackend should inherith from BaseConcurrentQueue");
-    };
-  }
-}
+  static_assert(std::is_base_of_v<BaseConcurrentQueue<Element>,
+                                  ChannelBackend<Element, QueueSize>>,
+                "ChannelBackend should inherith from BaseConcurrentQueue");
+};
+}  // namespace datastructures
+}  // namespace thunder

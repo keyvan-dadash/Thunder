@@ -1,43 +1,23 @@
 
 
-
 #include <semaphore.h>
 
-
-
 namespace thunder {
-  namespace synchronization {
-      
-      class Semaphore
-      {
-        public:
-          Semaphore(int counter = 1)
-          {
-              sem_init(&semaphore, 0, counter);
-          }
+namespace synchronization {
 
-          ~Semaphore()
-          {
-              sem_close(&semaphore);
-          }
+class Semaphore {
+ public:
+  Semaphore(int counter = 1) { sem_init(&semaphore, 0, counter); }
 
+  ~Semaphore() { sem_close(&semaphore); }
 
-          void release() noexcept
-          {
-              sem_post(&semaphore);
-          }
+  void release() noexcept { sem_post(&semaphore); }
 
-          void acquire() noexcept
-          {
-              sem_wait(&semaphore);
-          }
+  void acquire() noexcept { sem_wait(&semaphore); }
 
+ private:
+  sem_t semaphore;
+};
+}  // namespace synchronization
 
-        private:
-          sem_t semaphore;
-        
-      };
-  }
-
-
-}
+}  // namespace thunder

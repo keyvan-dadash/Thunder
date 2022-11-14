@@ -1,71 +1,67 @@
 #pragma once
 
+#include <future>
 #include <memory>
 #include <thread>
-#include <future>
 #include <vector>
 
-#include "thunder/datastructures/ConcurrentQueue.hpp"
-
 #include "Task.hpp"
+#include "thunder/datastructures/ConcurrentQueue.hpp"
 
 namespace thunder {
 
-  namespace pools {
+namespace pools {
 
-    struct ThreadPoolOptions
-    {
-      size_t numberOfThreads;
-    };
+struct ThreadPoolOptions {
+  size_t numberOfThreads;
+};
 
-    template <size_t ThreadPoolQueueSize = 1024, size_t ThreadQueueSize = 512>
-    class ThreadPool
-    {
-    public:
+template <size_t ThreadPoolQueueSize = 1024, size_t ThreadQueueSize = 512>
+class ThreadPool {
+ public:
+  ThreadPool(ThreadPoolOptions options);
 
-      ThreadPool(ThreadPoolOptions options);
+  ThreadPool(ThreadPool&& other) = delete;
+  ThreadPool& operator=(ThreadPool&& rhs) = delete;
 
-      ThreadPool(ThreadPool&& other) = delete;
-      ThreadPool& operator=(ThreadPool&& rhs) = delete;
+  ThreadPool(const ThreadPool& other) = delete;
+  ThreadPool& operator=(const ThreadPool& rhs) = delete;
 
-      ThreadPool(const ThreadPool& other) = delete;
-      ThreadPool& operator=(const ThreadPool& rhs) = delete;
+  ~ThreadPool();
 
-      ~ThreadPool();
+  template <typename FuncType>
+  std::future<typename std::result_of_t<FuncType()>> submit(FuncType func);
 
-      template<typename FuncType>
-      std::future<
-        typename std::result_of_t<FuncType()>
-      > submit(FuncType func);
+  void handleTasks(size_t queue_index);
 
-      void handleTasks(size_t queue_index);
+  void done();
 
-      void done();
+ private:
+  bool popTaskFromLocalQueue(Task& task);
 
-    private:
+  bool popTaskFromOtherThreads(Task& task);
 
-      bool popTaskFromLocalQueue(Task& task);
+  bool popTaskFromGlobalQueue(Task& task);
 
-      bool popTaskFromOtherThreads(Task& task);
+  ThreadPoolOptions options_;
 
-      bool popTaskFromGlobalQueue(Task& task);
+  std::vector<std::thread> threads_;
 
-      ThreadPoolOptions options_;
+  std::vector<std::unique_ptr<
+      thunder::datastructures::ConcurrentQueue<Task, ThreadQueueSize>>>
+      thread_queues_;
 
-      std::vector<std::thread> threads_;
+  static thread_local thunder::datastructures::ConcurrentQueue<
+      Task, ThreadQueueSize>* local_tasks_queue_ptr_;
 
-      std::vector<std::unique_ptr<thunder::datastructures::ConcurrentQueue<Task, ThreadQueueSize>>> thread_queues_;
+  static thread_local size_t thread_queue_index_;
 
-      static thread_local thunder::datastructures::ConcurrentQueue<Task, ThreadQueueSize> *local_tasks_queue_ptr_;
+  thunder::datastructures::ConcurrentQueue<Task, ThreadPoolQueueSize>
+      pool_tasks_queue_;
 
-      static thread_local size_t thread_queue_index_;
-
-      thunder::datastructures::ConcurrentQueue<Task, ThreadPoolQueueSize> pool_tasks_queue_;
-
-      bool isRunning_ = true;
-    };
-  };
-}
+  bool isRunning_ = true;
+};
+};  // namespace pools
+}  // namespace thunder
 
 #include <thunder/pools/ThreadPool.cpp>
-

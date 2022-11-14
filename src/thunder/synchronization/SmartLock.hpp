@@ -1,58 +1,51 @@
 #pragma once
 
 #include <atomic>
-#include <cstdint>
 #include <condition_variable>
+#include <cstdint>
 #include <mutex>
-#include <type_traits>
-
 #include <thunder/synchronization/AbstractMutex.hpp>
+#include <type_traits>
 
 namespace thunder {
 
-  namespace synchronization {
+namespace synchronization {
 
-    // smae as WordLock in Webkit(WTF)
+// smae as WordLock in Webkit(WTF)
 
-    class SmartLock
-    {
-      public:
+class SmartLock {
+ public:
+  explicit SmartLock() = default;
 
-        explicit SmartLock() = default;
+  ~SmartLock() = default;
 
-        ~SmartLock() = default;
+  void lock();
 
-        void lock();
+  void unlock();
 
-        void unlock();
+  bool isLocked();
 
-        bool isLocked();
+ protected:
+  static constexpr uintptr_t kClear = 0;
+  static constexpr uintptr_t kIsLockedBit = 1;
+  static constexpr uintptr_t kIsQueueLocked = 2;
+  static constexpr uintptr_t kQueueHeadMask = 3;
+  static constexpr uint8_t kSpinLockCnt = 40;
 
-      protected:
+  void lockSlow();
 
-        static constexpr uintptr_t kClear = 0;
-        static constexpr uintptr_t kIsLockedBit = 1;
-        static constexpr uintptr_t kIsQueueLocked = 2;
-        static constexpr uintptr_t kQueueHeadMask = 3;
-        static constexpr uint8_t kSpinLockCnt = 40;
+  void unlockSlow();
 
-        void lockSlow();
+  std::atomic_uintptr_t state;
 
-        void unlockSlow();
-
-        std::atomic_uintptr_t state;
-
-      private:
-
-        struct ThreadData
-        {
-          bool shouldPark { false };
-          std::mutex parkingLock;
-          std::condition_variable parkingCondition;
-          ThreadData* next { nullptr };
-          ThreadData* tail { nullptr };
-        };
-    };
+ private:
+  struct ThreadData {
+    bool shouldPark{false};
+    std::mutex parkingLock;
+    std::condition_variable parkingCondition;
+    ThreadData* next{nullptr};
+    ThreadData* tail{nullptr};
   };
-}
-
+};
+};  // namespace synchronization
+}  // namespace thunder
