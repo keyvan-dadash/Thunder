@@ -48,7 +48,7 @@ namespace thunder {
       auto head = head_.load(std::memory_order_relaxed);
       do
       {
-        if (size_.load(std::memory_order_acquire) >= kQueueSize)
+        if (std::abs(head - tail_.load(std::memory_order_relaxed)) >= kQueueSize)
         {
           return BaseConcurrentQueueStatus::CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE;
         }
@@ -64,13 +64,14 @@ namespace thunder {
     template <typename Element, std::size_t QueueSize>
     int ConcurrentQueue<Element, QueueSize>::pop(Element& element)
     {
-      if (size_ <= 0)
+      auto tail = tail_.load(std::memory_order_relaxed);
+      do
       {
-        return BaseConcurrentQueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY;
-      }
-
-      //TODO: how we gurantee this?
-      auto tail = tail_.fetch_add(1, std::memory_order_relaxed);
+        if (std::abs(head_.load(std::memory_order_relaxed) - tail) <= 0)
+        {
+          return BaseConcurrentQueueStatus::OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY;
+        }
+      } while(!tail_.compare_exchange_strong(tail, tail + 1, std::memory_order_release));
 
       pop_atomic(element, tail % kQueueSize);
 
