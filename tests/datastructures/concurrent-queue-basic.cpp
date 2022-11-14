@@ -1,84 +1,95 @@
 
 
-#include <string>
-
-
 #include <gtest/gtest.h>
 
+#include <string>
 #include <thunder/datastructures/ConcurrentQueue.hpp>
 
 TEST(ConcurrentQueueBasicOperations, CreateQueue) {
-    EXPECT_NO_THROW({
-        thunder::datastructures::ConcurrentQueue<int> queue;
-    });
-    EXPECT_NO_THROW({
-        thunder::datastructures::ConcurrentQueue<char> queue;
-    });
-    EXPECT_NO_THROW({
-        thunder::datastructures::ConcurrentQueue<float> queue;
-    });
-    EXPECT_NO_THROW({
-        thunder::datastructures::ConcurrentQueue<std::string> queue;
-    });
+  EXPECT_NO_THROW({ thunder::datastructures::ConcurrentQueue<int> queue; });
+  EXPECT_NO_THROW({ thunder::datastructures::ConcurrentQueue<char> queue; });
+  EXPECT_NO_THROW({ thunder::datastructures::ConcurrentQueue<float> queue; });
+  EXPECT_NO_THROW(
+      { thunder::datastructures::ConcurrentQueue<std::string> queue; });
 }
 
 TEST(ConcurrentQueueBasicOperations, EmptyQueue) {
-    {
-        thunder::datastructures::ConcurrentQueue<int> queue;
-        EXPECT_EQ(queue.isEmpty(), true);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<char> queue;
-        EXPECT_EQ(queue.isEmpty(), true);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<float> queue;
-        EXPECT_EQ(queue.isEmpty(), true);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<std::string> queue;
-        EXPECT_EQ(queue.isEmpty(), true);
-    }
+  {
+    thunder::datastructures::ConcurrentQueue<int> queue;
+    EXPECT_EQ(queue.isEmpty(), true);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<char> queue;
+    EXPECT_EQ(queue.isEmpty(), true);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<float> queue;
+    EXPECT_EQ(queue.isEmpty(), true);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<std::string> queue;
+    EXPECT_EQ(queue.isEmpty(), true);
+  }
 }
 
 TEST(ConcurrentQueueBasicOperations, PushElementToQueue) {
-    {
-        thunder::datastructures::ConcurrentQueue<int> queue;
-        EXPECT_EQ(queue.forcePush(5), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<char> queue;
-        EXPECT_EQ(queue.forcePush('c'), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<float> queue;
-        EXPECT_EQ(queue.forcePush(5.1), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<std::string> queue;
-        EXPECT_EQ(queue.forcePush("foo"), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-        EXPECT_EQ(queue.forcePush(std::string("bar")), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-    }
+  {
+    thunder::datastructures::ConcurrentQueue<int> queue;
+    EXPECT_EQ(queue.forcePush(5),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<char> queue;
+    EXPECT_EQ(queue.forcePush('c'),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<float> queue;
+    EXPECT_EQ(queue.forcePush(5.1),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<std::string> queue;
+    EXPECT_EQ(queue.forcePush("foo"),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+    EXPECT_EQ(queue.forcePush(std::string("bar")),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+  }
 }
 
 TEST(ConcurrentQueueBasicOperations, TryPushElementToQueue) {
-    {
-        thunder::datastructures::ConcurrentQueue<int> queue;
-        EXPECT_EQ(queue.tryPush(5), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<char> queue;
-        EXPECT_EQ(queue.tryPush('c'), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<float> queue;
-        EXPECT_EQ(queue.tryPush(5.1), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-    }
-    {
-        thunder::datastructures::ConcurrentQueue<std::string> queue;
-        EXPECT_EQ(queue.tryPush("foo"), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-        EXPECT_EQ(queue.tryPush(std::string("bar")), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_PUSHED_SUCCESSFULLY);
-    }
+  {
+    thunder::datastructures::ConcurrentQueue<int> queue;
+    EXPECT_EQ(queue.tryPush(5),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<char> queue;
+    EXPECT_EQ(queue.tryPush('c'),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<float> queue;
+    EXPECT_EQ(queue.tryPush(5.1),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+  }
+  {
+    thunder::datastructures::ConcurrentQueue<std::string> queue;
+    EXPECT_EQ(queue.tryPush("foo"),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+    EXPECT_EQ(queue.tryPush(std::string("bar")),
+              thunder::datastructures::ConcurrentQueueOperationStatus::
+                  ELEMENT_PUSHED_SUCCESSFULLY);
+  }
 }
 
 // TEST(ConcurrentQueueBasicOperations, GetFrontElement) {
@@ -110,28 +121,33 @@ TEST(ConcurrentQueueBasicOperations, TryPushElementToQueue) {
 //     {
 //         thunder::datastructures::ConcurrentQueue<int> queue;
 //         queue.push(5);
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+//         EXPECT_EQ(queue.pop(),
+//         thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 //         EXPECT_EQ(queue.isEmpty(), true);
 //     }
 //     {
 //         thunder::datastructures::ConcurrentQueue<char> queue;
 //         queue.push('c');
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+//         EXPECT_EQ(queue.pop(),
+//         thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 //         EXPECT_EQ(queue.isEmpty(), true);
 //     }
 //     {
 //         thunder::datastructures::ConcurrentQueue<float> queue;
 //         queue.push(5.1);
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+//         EXPECT_EQ(queue.pop(),
+//         thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 //         EXPECT_EQ(queue.isEmpty(), true);
 //     }
 //     {
 //         thunder::datastructures::ConcurrentQueue<std::string> queue;
 //         queue.push("foo");
 //         queue.push(std::string("bar"));
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+//         EXPECT_EQ(queue.pop(),
+//         thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 //         EXPECT_EQ(queue.isEmpty(), false);
-//         EXPECT_EQ(queue.pop(), thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
+//         EXPECT_EQ(queue.pop(),
+//         thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY);
 //         EXPECT_EQ(queue.isEmpty(), true);
 //     }
 // }

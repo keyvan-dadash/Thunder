@@ -3,46 +3,39 @@
 
 #include <thunder/datastructures/BaseQueue.hpp>
 
-
 namespace thunder {
 
-  namespace datastructures {
+namespace datastructures {
 
+template <typename Element>
+class BaseConcurrentQueue {
+ public:
+  explicit BaseConcurrentQueue() = default;
 
+  ~BaseConcurrentQueue() = default;
 
-      template <typename Element>
-      class BaseConcurrentQueue
-      {
-        public:
-          explicit BaseConcurrentQueue() = default;
+  class BaseConcurrentQueueStatus {
+   public:
+    enum Status {
+      ELEMENT_PUSHED_SUCCESSFULLY = 1,
+      ELEMENT_POPED_SUCCESSFULLY,
+      CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE,
+      OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY
+    };
+  };
 
-          ~BaseConcurrentQueue() = default;
+  template <typename T>
+  int forcePush(T&& t);
 
-          class BaseConcurrentQueueStatus 
-          {
-            public:
-              enum Status
-              {
-                ELEMENT_PUSHED_SUCCESSFULLY = 1,
-                ELEMENT_POPED_SUCCESSFULLY,
-                CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE,
-                OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY
-              };
-          };
+  template <typename T>
+  int tryPush(T&& t);
 
-          template <typename T>
-          int forcePush(T&& t);
+  virtual int pop(Element& element) = 0;
 
-          template <typename T>
-          int tryPush(T&& t);
+  virtual bool isEmpty() = 0;
 
-          virtual int pop(Element& element) = 0;
+  virtual int getSizeOfQueue() = 0;
+};
 
-          virtual bool isEmpty() = 0;
-
-          virtual int getSizeOfQueue() = 0;
-
-      };
-
-  }
-}
+}  // namespace datastructures
+}  // namespace thunder

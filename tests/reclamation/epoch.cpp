@@ -1,20 +1,16 @@
 #define CATCH_CONFIG_MAIN
 
-#include <vector>
-#include <thread>
-#include <iostream>
-#include <mutex>
-#include <cstdint>
-#include <cassert>
-#include <random>
-#include <iostream>
-#include <random>
-#include <condition_variable>
-
 #include <gtest/gtest.h>
 
+#include <cassert>
+#include <condition_variable>
+#include <cstdint>
+#include <iostream>
+#include <mutex>
+#include <random>
+#include <thread>
 #include <thunder/reclamation/Epoch.hpp>
-
+#include <vector>
 
 // struct Data {
 //     uint64_t p;
@@ -29,20 +25,21 @@
 
 //     constexpr int num_data = 2;
 //     std::vector<std::atomic<Data*>> arr_data(num_data);
-    
+
 //     for(int i=0;i<num_data;++i){
 //         auto d = new Data();
 //         d->p = i;
 //         arr_data[i].store( d );
 //     }
-    
+
 //     int numthread = std::thread::hardware_concurrency();
 
-//     std::vector<std::thread> th;    
+//     std::vector<std::thread> th;
 
 //     std::mutex mtx_write;
 
-//     unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+//     unsigned seed =
+//     std::chrono::system_clock::now().time_since_epoch().count();
 //     std::default_random_engine gen(seed);
 
 //     int sync_count = 0;
@@ -51,7 +48,7 @@
 //     std::condition_variable cv;
 
 //     std::map<int, int> removed_count;
-    
+
 //     thunder::reclamation::Epoch<Data> ebr;
 
 //     auto f = [&](int id){
@@ -61,18 +58,18 @@
 //             ++sync_count;
 //             cv.notify_all();
 //         }
-        
+
 //         {
 //             std::unique_lock<std::mutex> lock(m_sync);
 //             cv.wait(lock, [&](){return sync_count>=numthread;});
 //         }
-        
+
 //         std::uniform_int_distribution<int> distrib(0,3);
 //         std::uniform_int_distribution<int> distrib_arr(0,num_data-1);
-    
+
 //         int count_read = 0;
 //         int count_removed = 0;
-    
+
 //         std::vector<int> read;
 //         std::vector<int> removed;
 
@@ -85,8 +82,8 @@
 //             auto guard = ebr.enterCriticalPath();
 
 //             if(num<=1){
-//                 Data * ptr = arr_data[arr_idx].load(std::memory_order_acquire);
-//                 if(ptr){
+//                 Data * ptr =
+//                 arr_data[arr_idx].load(std::memory_order_acquire); if(ptr){
 //                     auto val = ptr->p;
 //                     read.push_back(val);
 //                     ++count_read;
@@ -94,9 +91,10 @@
 //             }else{
 //                 auto d_new = new Data();
 //                 d_new->p = num_data + id * chunk + i;
-                
-//                 Data * ptr = arr_data[arr_idx].load(std::memory_order_relaxed);
-//                 if(ptr && arr_data[arr_idx].compare_exchange_strong(ptr, d_new)){
+
+//                 Data * ptr =
+//                 arr_data[arr_idx].load(std::memory_order_relaxed); if(ptr &&
+//                 arr_data[arr_idx].compare_exchange_strong(ptr, d_new)){
 //                     removed.push_back(ptr->p);
 //                     ebr.retireObj(ptr);
 //                     ++count_removed;
@@ -105,21 +103,22 @@
 //                 }
 //             }
 //         }
-        
+
 //         {
 //             std::scoped_lock<std::mutex> lock(m_sync);
 //             ++sync_count;
 //             cv.notify_all();
 //         }
-        
+
 //         {
 //             std::unique_lock<std::mutex> lock(m_sync);
 //             cv.wait(lock, [&](){return sync_count==numthread*2;});
 //         }
-        
+
 //         {
 //             std::lock_guard<std::mutex> lock(mtx_write);
-//             std::cout << "count_read: " << count_read << ", count removed: " << count_removed << std::endl;
+//             std::cout << "count_read: " << count_read << ", count removed: "
+//             << count_removed << std::endl;
 //         }
 
 //         {
@@ -131,15 +130,15 @@
 
 //         // ebr.sync();
 //     };
-    
+
 //     for( int i = 0; i < numthread; ++i ){
 //         th.push_back( std::thread(f, i) );
 //     }
-    
+
 //     for( auto & i: th ){
 //         i.join();
 //     }
-        
+
 //     int count_remain = 0;
 //     for(auto &i: arr_data){
 //         auto d = i.load();
@@ -156,7 +155,6 @@
 //         EXPECT_EQ(count, 1);
 //     }
 // }
-
 
 // TEST(EpochBasicTest, EpochRelamation)
 // {
@@ -190,7 +188,6 @@
 //     cv.notify_one();
 
 //     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
-
 
 //     for(int i=0;i < number_of_data;++i){
 //       ebr.sync();
@@ -230,10 +227,8 @@
 //   std::thread reader_thread(reader_fn);
 //   std::thread writer_thread(writer_fn);
 
-
 //   writer_thread.join();
 //   reader_thread.join();
-
 
 //   // ebr.sync();
 //   for(int i=0;i < number_of_data;++i){
@@ -245,25 +240,19 @@
 //   //     for( int i = 0; i < numthread; ++i ){
 // //         th.push_back( std::thread(f, i) );
 // //     }
-    
+
 // //     for( auto & i: th ){
 // //         i.join();
 // //     }
 // }
 
 int check = 0;
-TEST(EpochBasicTest, EpochRelamation)
-{
-  struct Data
-  {
+TEST(EpochBasicTest, EpochRelamation) {
+  struct Data {
     int32_t p = 10;
     int32_t* l;
-    Data()
-    {
-      l = &p;
-    }
-    ~Data()
-    {
+    Data() { l = &p; }
+    ~Data() {
       check++;
       std::cout << "des " << this->p << std::endl;
     }
@@ -283,8 +272,7 @@ TEST(EpochBasicTest, EpochRelamation)
   Data* ptr = new Data();
   Data* ptr2 = new Data();
 
-  auto reader_fn = [&]()
-  {
+  auto reader_fn = [&]() {
     ebr.registerThisThread();
     std::this_thread::sleep_for(std::chrono::milliseconds(30));
 
@@ -305,9 +293,8 @@ TEST(EpochBasicTest, EpochRelamation)
     }
     std::cout << *(ptr2->l) << std::endl;
 
-
     std::unique_lock<std::mutex> lock(m_);
-    cv.wait(lock, [&](){return isReady;});
+    cv.wait(lock, [&]() { return isReady; });
 
     *(ptr2->l) = 9;
     std::cout << "here " << std::endl;
@@ -318,18 +305,15 @@ TEST(EpochBasicTest, EpochRelamation)
     std::this_thread::sleep_for(std::chrono::milliseconds(60));
     EXPECT_TRUE(ebr.sync());
 
-
     std::this_thread::sleep_for(std::chrono::milliseconds(500));
     std::cout << *(ptr2->l) << std::endl;
 
     EXPECT_TRUE(ebr.sync());
 
     EXPECT_EQ(check, 2);
-
   };
 
-  auto writer_fn = [&]()
-  {
+  auto writer_fn = [&]() {
     ebr.registerThisThread();
 
     {
@@ -352,17 +336,13 @@ TEST(EpochBasicTest, EpochRelamation)
     // std::this_thread::sleep_for(std::chrono::milliseconds(100));
     ebr.retireObj(ptr2);
     std::this_thread::sleep_for(std::chrono::milliseconds(600));
-
-
   };
 
   std::thread reader_thread(reader_fn);
   std::thread writer_thread(writer_fn);
 
-
   writer_thread.join();
   reader_thread.join();
-
 
   // ebr.sync();
   // for(int i=0;i < number_of_data;++i){
@@ -372,10 +352,10 @@ TEST(EpochBasicTest, EpochRelamation)
   //   }
 
   //     for( int i = 0; i < numthread; ++i ){
-//         th.push_back( std::thread(f, i) );
-//     }
-    
-//     for( auto & i: th ){
-//         i.join();
-//     }
+  //         th.push_back( std::thread(f, i) );
+  //     }
+
+  //     for( auto & i: th ){
+  //         i.join();
+  //     }
 }

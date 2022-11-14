@@ -1,13 +1,12 @@
-#include <thread>
-
 #include <benchmark/benchmark.h>
 
+#include <thread>
 #include <thunder/synchronization/SpinLock.hpp>
 
 static void BE_SpinLock(benchmark::State& state) {
-    // state.PauseTiming();
+  // state.PauseTiming();
 
-    for (auto _ : state) {
+  for (auto _ : state) {
     thunder::synchronization::SpinLock spinlock;
 
     std::vector<std::thread> threads;
@@ -18,33 +17,28 @@ static void BE_SpinLock(benchmark::State& state) {
 
     // state.ResumeTiming();
     for (size_t i = 0; i < 16; i++) {
-        
-        std::thread t1([&](){
+      std::thread t1([&]() {
+        for (size_t j = 0; j < count_per_thread; j++) {
+          spinlock.lock();
+          total++;
+          spinlock.unlock();
+        }
+      });
 
-            for (size_t j = 0; j < count_per_thread; j++)
-            {
-                spinlock.lock();
-                total++;
-                spinlock.unlock();
-            }
-            
-        });
-
-        threads.push_back(std::move(t1));
-
+      threads.push_back(std::move(t1));
     }
 
     for (int i = 0; i < 16; i++) {
-        threads.at(i).join();
+      threads.at(i).join();
     }
-    }
+  }
 }
-BENCHMARK(BE_SpinLock)->Range(8, 8<<16)->UseRealTime();
+BENCHMARK(BE_SpinLock)->Range(8, 8 << 16)->UseRealTime();
 
 static void BE_CachelineSpinLock(benchmark::State& state) {
-    // state.PauseTiming();
+  // state.PauseTiming();
 
-    for (auto _ : state) {
+  for (auto _ : state) {
     thunder::synchronization::CacheLineSpinLock spinlock;
 
     std::vector<std::thread> threads;
@@ -55,27 +49,22 @@ static void BE_CachelineSpinLock(benchmark::State& state) {
 
     // state.ResumeTiming();
     for (size_t i = 0; i < 16; i++) {
-        
-        std::thread t1([&](){
+      std::thread t1([&]() {
+        for (size_t j = 0; j < count_per_thread; j++) {
+          spinlock.lock();
+          total++;
+          spinlock.unlock();
+        }
+      });
 
-            for (size_t j = 0; j < count_per_thread; j++)
-            {
-                spinlock.lock();
-                total++;
-                spinlock.unlock();
-            }
-            
-        });
-
-        threads.push_back(std::move(t1));
-
+      threads.push_back(std::move(t1));
     }
 
     for (int i = 0; i < 16; i++) {
-        threads.at(i).join();
+      threads.at(i).join();
     }
-    }
+  }
 }
-BENCHMARK(BE_CachelineSpinLock)->Range(8, 8<<16)->UseRealTime();
+BENCHMARK(BE_CachelineSpinLock)->Range(8, 8 << 16)->UseRealTime();
 
 BENCHMARK_MAIN();

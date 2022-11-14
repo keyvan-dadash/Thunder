@@ -2,20 +2,17 @@
 
 namespace thunder {
 
-  namespace synchronization {
+namespace synchronization {
 
-    class AbstractMutex
-    {
-      public:
+class AbstractMutex {
+ public:
+  AbstractMutex() = default;
 
-        AbstractMutex() = default;
+  virtual void lock() = 0;
 
-        virtual void lock() = 0;
+  virtual void unlock() = 0;
 
-        virtual void unlock() = 0;
-
-        virtual void isLocked() = 0;
-    };
-  };
-}
-
+  virtual void isLocked() = 0;
+};
+};  // namespace synchronization
+}  // namespace thunder
