@@ -25,10 +25,12 @@ namespace thunder {
 
       }
 
-      // Task* operator=(Task&& rhs) noexcept
-      // {
-      //   this->Impl_ = std::exchange(rhs.Impl_, this->Impl_);
-      // }
+      Task* operator=(Task&& rhs) noexcept
+      {
+        Impl_.swap(rhs.Impl_);
+
+        return this;
+      }
 
 
       Task(const Task& other) = delete;

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <thread>
 #include <memory>
 #include <future>
@@ -12,11 +14,22 @@ namespace thunder {
   namespace pools {
 
     template <size_t ThreadPoolQueueSize, size_t ThreadQueueSize>
-    ThreadPool<ThreadPoolQueueSize, ThreadQueueSize>::ThreadPool(ThreadPoolOptions options) : options_(options_)
+    thread_local thunder::datastructures::ConcurrentQueue<Task, ThreadQueueSize> *ThreadPool<ThreadPoolQueueSize, ThreadQueueSize>::local_tasks_queue_ptr_;
+
+    template <size_t ThreadPoolQueueSize, size_t ThreadQueueSize>
+    thread_local size_t ThreadPool<ThreadPoolQueueSize, ThreadQueueSize>::thread_queue_index_;
+
+    template <size_t ThreadPoolQueueSize, size_t ThreadQueueSize>
+    ThreadPool<ThreadPoolQueueSize, ThreadQueueSize>::ThreadPool(ThreadPoolOptions options) : options_(options)
     {
       size_t numebrOfThreads = this->options_.numberOfThreads;
       threads_.reserve(numebrOfThreads);
+      thread_queues_.reserve(numebrOfThreads);
 
+      for (int i = 0; i < numebrOfThreads; i++) {
+          thread_queues_.push_back(std::unique_ptr<thunder::datastructures::ConcurrentQueue<Task, ThreadQueueSize>>(
+                new thunder::datastructures::ConcurrentQueue<Task, ThreadQueueSize>()));
+      }
       for (int i = 0; i < numebrOfThreads; i++) {
         threads_.push_back(
           std::thread(&ThreadPool::handleTasks, this, i)
@@ -64,7 +77,7 @@ namespace thunder {
       while(this->isRunning_)
       {
         Task task;
-
+        // std::cout << queue_index << std::endl;
         if (popTaskFromLocalQueue(task) || popTaskFromGlobalQueue(task) || popTaskFromOtherThreads(task))
         {
           task();
@@ -93,13 +106,11 @@ namespace thunder {
     template <size_t ThreadPoolQueueSize, size_t ThreadQueueSize>
     bool ThreadPool<ThreadPoolQueueSize, ThreadQueueSize>::popTaskFromGlobalQueue(Task& task)
     {
-      if (local_tasks_queue_ptr_)
-      {
-        auto result = pool_tasks_queue_.pop(task);
-        if (result == 
-            thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY)
-          return true;
-      }
+      // std::cout << "hehe" << std::endl;
+      auto result = pool_tasks_queue_.pop(task);
+      if (result == 
+          thunder::datastructures::ConcurrentQueueOperationStatus::ELEMENT_POPED_SUCCESSFULLY)
+        return true;
 
       return false;
     }
@@ -123,6 +134,9 @@ namespace thunder {
     template <size_t ThreadPoolQueueSize, size_t ThreadQueueSize>
     void ThreadPool<ThreadPoolQueueSize, ThreadQueueSize>::done()
     {
+      if (!isRunning_)
+        return;
+      
       size_t numebrOfThreads = this->options_.numberOfThreads;
       
       isRunning_ = false;

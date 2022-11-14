@@ -66,3 +66,6 @@ namespace thunder {
     };
   };
 }
+
+#include <thunder/pools/ThreadPool.cpp>
+
