@@ -2,6 +2,7 @@
 
 #include "ThreadPool.hpp"
 
+#include <assert.h>
 #include <future>
 #include <memory>
 #include <thread>
@@ -26,6 +27,7 @@ ThreadPool<ThreadPoolQueueSize, ThreadQueueSize>::ThreadPool(
     ThreadPoolOptions options)
     : options_(options) {
   size_t numebrOfThreads = this->options_.numberOfThreads;
+  assert(options_.threads_option.size() <= numebrOfThreads && "There are more threads option than number of given threads");
   threads_.reserve(numebrOfThreads);
   thread_queues_.reserve(numebrOfThreads);
 
@@ -36,8 +38,21 @@ ThreadPool<ThreadPoolQueueSize, ThreadQueueSize>::ThreadPool(
             new thunder::datastructures::ConcurrentQueue<Task,
                                                          ThreadQueueSize>()));
   }
-  for (int i = 0; i < numebrOfThreads; i++) {
-    threads_.push_back(std::thread(&ThreadPool::handleTasks, this, i));
+
+  int remain = numebrOfThreads - options_.threads_option.size();
+  int thread_index = 0;
+  for (auto& th_option : options_.threads_option) {
+    auto th = std::thread(&ThreadPool::handleTasks, this, thread_index++);
+    if (th_option.set_sche)
+      ThreadUtils::setScheduling(th, th_option.policy, th_option.priority);
+    if (th_option.set_cpu_affinity)
+      ThreadUtils::setCPUAffinity(th, th_option.cpu_ids);
+
+    threads_.push_back(std::move(th));
+  }
+
+  for (int i = 0; i < remain; i++) {
+    threads_.push_back(std::thread(&ThreadPool::handleTasks, this, thread_index++));
   }
 }
 
