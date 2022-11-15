@@ -48,6 +48,8 @@ class BaseQueue {
   /**
    * \brief Try push element to queue when queue is not reached it's capacity.
    * \tparam Element to push.
+   * \param T is the item to push.
+   * \param if queue size is more than maxSize then operation whould fail.
    * \return operation status.
    */
   template <typename T>
