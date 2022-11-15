@@ -122,6 +122,9 @@ class ConcurrentQueue : BaseConcurrentQueue<Element> {
    */
   class CellStates {
    public:
+    /**
+     * \brief States is the enum which can help show cell status.
+     */
     enum States { 
       STORED = 1, /// STORED use when there is element in the cell.
       STORING, /// STORING use when a push operation is in progress.

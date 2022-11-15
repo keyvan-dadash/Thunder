@@ -41,10 +41,10 @@ class Queue : public BaseQueue<Element> {
    public:
     enum Status {
       ELEMENT_PUSHED_SUCCESSFULLY =
-          BaseQueueStatus::Status::ELEMENT_PUSHED_SUCCESSFULLY,
-      ELEMENT_POPED_SUCCESSFULLY,
-      CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE,
-      OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY
+          BaseQueueStatus::Status::ELEMENT_PUSHED_SUCCESSFULLY, /// Return when push operation done succesfully.
+      ELEMENT_POPED_SUCCESSFULLY, /// Return when pop operation done successfully.
+      CANNOT_INSERT_ELEMENT_QUEUE_SIZE_REACHED_TO_MAX_SIZE, /// Return when queue is already full and cannot insert in it.
+      OPERATION_CANNOT_PERMIT_QUEUE_IS_EMPTY /// Return when queue is already empty and pop operation requested.
     };
   };
 
